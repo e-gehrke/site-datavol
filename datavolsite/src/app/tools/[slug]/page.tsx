@@ -1,17 +1,12 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { getTool, TOOLS } from '@/lib/tools'
+import { getTool } from '@/lib/tools'
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
-interface Props {
-  params: Promise<{ slug: string }>
-}
-
-export async function generateStaticParams() {
-  return TOOLS.map(t => ({ slug: t.slug }))
-}
+interface Props { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -27,12 +22,50 @@ export default async function ToolPage({ params }: Props) {
 
   const isPro = tool.category === 'pro'
 
+  if (isPro) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect(`/login?next=/tools/${slug}`)
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+
+    const hasAccess = profile?.role === 'pro' || profile?.role === 'admin'
+
+    if (!hasAccess) {
+      return (
+        <>
+          <Header />
+          <main>
+            <section className="bg-grafite min-h-[70vh] flex items-center">
+              <div className="wrap py-24">
+                <p className="type-label text-lime mb-6">DATA.VOL PRO</p>
+                <h1 className="type-h1 text-off max-w-[16ch]">Acesso exclusivo PRO.</h1>
+                <p className="type-lead text-cinza mt-6 max-w-[48ch]">
+                  <span className="text-off">{tool.name}</span> é uma ferramenta exclusiva para membros PRO.
+                  O acesso é concedido por convite.
+                </p>
+                <Link href="/tools"
+                  className="type-label text-grafite bg-lime px-6 py-3 rounded hover:opacity-90 transition-opacity mt-10 inline-block">
+                  ← Ver ferramentas disponíveis
+                </Link>
+              </div>
+            </section>
+          </main>
+          <Footer />
+        </>
+      )
+    }
+  }
+
   return (
     <>
       <Header />
       <main>
 
-        {/* HEADER */}
         <section className={isPro ? 'bg-grafite' : 'bg-off border-b border-[rgba(166,166,166,.28)]'}>
           <div className="wrap py-16">
             <div className="flex items-center gap-3 mb-6">
@@ -52,7 +85,6 @@ export default async function ToolPage({ params }: Props) {
           </div>
         </section>
 
-        {/* TOOL AREA — placeholder until calculators are integrated */}
         <section className={isPro ? 'bg-black-archive' : 'bg-off'}>
           <div className="wrap py-16">
             <div className={`rounded border-2 border-dashed p-16 text-center ${
