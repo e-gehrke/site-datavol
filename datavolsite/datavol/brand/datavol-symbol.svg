@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="DATA.VOL">
+  <title>DATA.VOL</title>
+  <rect x="5" y="5" width="90" height="90" rx="16" fill="#3B5A67"/>
+  <path d="M26 46 L43 66 L64 36" fill="none" stroke="#F2EDE0" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M73 23 L73 38 L59 28 Z" fill="#F2EDE0"/>
+</svg>

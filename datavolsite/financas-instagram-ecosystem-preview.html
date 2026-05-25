@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamento — Ecossistema de Educação Financeira</title>
+<style>
+  :root {
+    --navy: #0F1B2D;
+    --navy2: #1E2D40;
+    --white: #F4F4F0;
+    --slate: #8B95A3;
+    --accent: #C8A96E;
+    --teal: #3D8B8B;
+    --blue: #2C5282;
+    --electric: #63B3ED;
+    --alert: #C85A3A;
+    --warm: #E8D5B7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--white); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { color: var(--teal); }
+
+  /* Layout */
+  #sidebar {
+    position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+    background: #0a1220; overflow-y: auto; padding: 24px 16px;
+    border-right: 1px solid var(--navy2); z-index: 100;
+  }
+  #main { margin-left: 260px; padding: 40px 48px; max-width: 1100px; }
+
+  /* Sidebar */
+  .sidebar-brand { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .sidebar-sub { font-size: 11px; color: var(--slate); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-section-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--slate); margin-bottom: 8px; padding-left: 8px; }
+  .nav-link { display: block; padding: 6px 8px; border-radius: 4px; color: var(--white); font-size: 13px; transition: all 0.15s; opacity: 0.75; }
+  .nav-link:hover { background: var(--navy2); opacity: 1; color: var(--white); }
+  .nav-link.cc { border-left: 2px solid var(--teal); }
+  .nav-link.nt { border-left: 2px solid var(--blue); }
+
+  /* Sections */
+  section { margin-bottom: 64px; padding-top: 24px; }
+  .section-badge { display: inline-block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; padding: 3px 10px; border-radius: 20px; margin-bottom: 12px; font-weight: 600; }
+  .badge-estrategia { background: rgba(200,169,110,0.15); color: var(--accent); }
+  .badge-cc { background: rgba(61,139,139,0.15); color: var(--teal); }
+  .badge-nt { background: rgba(44,82,130,0.25); color: var(--electric); }
+  .badge-design { background: rgba(139,149,163,0.15); color: var(--slate); }
+  .badge-op { background: rgba(200,169,110,0.1); color: var(--accent); }
+
+  h1 { font-size: 36px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+  h2 { font-size: 26px; font-weight: 700; color: var(--white); margin-bottom: 16px; border-bottom: 1px solid var(--navy2); padding-bottom: 10px; }
+  h3 { font-size: 18px; font-weight: 600; color: var(--accent); margin: 28px 0 12px; }
+  h4 { font-size: 14px; font-weight: 600; color: var(--slate); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 8px; }
+  p { color: #d0d8e4; margin-bottom: 12px; }
+  .lead { font-size: 17px; color: var(--white); opacity: 0.85; }
+
+  /* Hero */
+  .hero { padding: 48px 0 40px; border-bottom: 1px solid var(--navy2); margin-bottom: 48px; }
+  .hero h1 { font-size: 42px; }
+  .hero-arch { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 32px; }
+  .arch-card { background: var(--navy2); border-radius: 8px; padding: 20px; border-top: 3px solid var(--accent); }
+  .arch-card.cc { border-top-color: var(--teal); }
+  .arch-card.nt { border-top-color: var(--blue); }
+  .arch-card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--slate); margin-bottom: 6px; }
+  .arch-card-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .arch-card-handle { font-size: 12px; color: var(--slate); }
+  .arch-card-desc { font-size: 13px; color: #b0bac5; margin-top: 10px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13px; }
+  th { background: var(--navy2); color: var(--slate); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; padding: 10px 12px; text-align: left; }
+  td { padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #d0d8e4; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .score { font-weight: 700; color: var(--accent); }
+
+  /* Cards grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin: 16px 0; }
+  .card { background: var(--navy2); border-radius: 6px; padding: 16px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .card-body { font-size: 12px; color: var(--slate); line-height: 1.5; }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .card-teal { border-left: 3px solid var(--teal); }
+  .card-blue { border-left: 3px solid var(--blue); }
+
+  /* Pillars */
+  .pilar { background: var(--navy2); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+  .pilar-num { font-size: 11px; color: var(--slate); margin-bottom: 4px; }
+  .pilar-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .pilar-body { font-size: 13px; color: #b0bac5; }
+  .tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin: 2px; font-weight: 500; }
+  .tag-teal { background: rgba(61,139,139,0.2); color: var(--teal); }
+  .tag-blue { background: rgba(44,82,130,0.25); color: var(--electric); }
+  .tag-accent { background: rgba(200,169,110,0.15); color: var(--accent); }
+
+  /* Series */
+  .serie { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--navy2); }
+  .serie-num { font-size: 22px; font-weight: 700; color: var(--navy2); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+  .serie-content .serie-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 3px; }
+  .serie-content .serie-freq { font-size: 11px; color: var(--teal); margin-bottom: 3px; }
+  .serie-content .serie-desc { font-size: 12px; color: var(--slate); }
+
+  /* Calendar */
+  .cal-day { display: grid; grid-template-columns: 64px 1fr; gap: 0; border-bottom: 1px solid var(--navy2); }
+  .cal-day-num { padding: 12px; background: var(--navy2); text-align: center; }
+  .cal-day-num .num { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .cal-day-num .dow { font-size: 10px; color: var(--slate); text-transform: uppercase; }
+  .cal-day-content { padding: 12px 16px; }
+  .cal-titulo { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+  .cal-meta { font-size: 11px; color: var(--slate); }
+  .cal-nivel { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 8px; margin-left: 6px; }
+  .nivel-b { background: rgba(61,139,139,0.2); color: var(--teal); }
+  .nivel-i { background: rgba(200,169,110,0.15); color: var(--accent); }
+  .nivel-a { background: rgba(44,82,130,0.25); color: var(--electric); }
+
+  /* Posts */
+  .post-card { background: var(--navy2); border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+  .post-num { font-size: 10px; text-transform: uppercase; color: var(--slate); letter-spacing: 1px; margin-bottom: 6px; }
+  .post-title { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 16px; }
+  .slide-list { list-style: none; }
+  .slide-item { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+  .slide-item:last-child { border-bottom: none; }
+  .slide-num { font-size: 10px; font-weight: 700; color: var(--slate); min-width: 52px; padding-top: 2px; }
+  .slide-text { color: #c0cad5; }
+  .post-legenda { background: rgba(0,0,0,0.2); border-radius: 4px; padding: 12px; margin-top: 12px; font-size: 12px; color: var(--slate); border-left: 2px solid var(--teal); }
+  .post-legenda-nt { border-left-color: var(--blue); }
+  .post-cta { font-size: 12px; color: var(--accent); margin-top: 10px; font-style: italic; }
+
+  /* Compliance */
+  .compliance-block { background: rgba(200,90,58,0.08); border: 1px solid rgba(200,90,58,0.2); border-radius: 6px; padding: 16px; margin: 12px 0; }
+  .compliance-block-ok { background: rgba(61,139,139,0.08); border-color: rgba(61,139,139,0.2); }
+  .disclaimer-box { background: rgba(0,0,0,0.3); border: 1px solid var(--navy2); border-radius: 4px; padding: 12px 16px; font-size: 12px; color: var(--slate); font-family: monospace; margin: 12px 0; }
+
+  /* Colors palette */
+  .palette { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+  .swatch { border-radius: 6px; padding: 12px; min-width: 120px; }
+  .swatch-name { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+  .swatch-hex { font-size: 10px; opacity: 0.7; font-family: monospace; }
+
+  /* Quality criteria */
+  .criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .criteria-item { background: var(--navy2); border-radius: 6px; padding: 14px; }
+  .criteria-code { font-size: 10px; font-weight: 700; color: var(--alert); margin-bottom: 4px; }
+  .criteria-code.ok { color: var(--teal); }
+  .criteria-text { font-size: 13px; color: var(--white); margin-bottom: 4px; }
+  .criteria-desc { font-size: 11px; color: var(--slate); }
+
+  /* Blockquote */
+  blockquote { border-left: 3px solid var(--accent); padding: 12px 20px; margin: 20px 0; background: rgba(200,169,110,0.05); border-radius: 0 6px 6px 0; }
+  blockquote p { color: var(--white); font-size: 16px; font-style: italic; margin: 0; }
+
+  /* Tabs for CC/NT */
+  .dual-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .dual-col-cc { border-top: 3px solid var(--teal); padding-top: 16px; }
+  .dual-col-nt { border-top: 3px solid var(--blue); padding-top: 16px; }
+  .dual-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 700; }
+  .dual-label-cc { color: var(--teal); }
+  .dual-label-nt { color: var(--electric); }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--navy2); margin: 32px 0; }
+
+  /* Formula box */
+  .formula { background: #080f1a; border: 1px solid var(--navy2); border-radius: 4px; padding: 14px 18px; font-family: 'Courier New', monospace; font-size: 13px; color: var(--electric); margin: 12px 0; }
+
+  /* Forbidden/preferred words */
+  .forbidden { color: var(--alert); font-weight: 600; }
+  .preferred { color: var(--teal); font-weight: 600; }
+
+  /* Backlog status */
+  .status { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 8px; }
+  .status-ideia { background: rgba(139,149,163,0.2); color: var(--slate); }
+  .status-dev { background: rgba(61,139,139,0.2); color: var(--teal); }
+
+  /* Scrollbar */
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-track { background: transparent; }
+  #sidebar::-webkit-scrollbar-thumb { background: var(--navy2); border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    #main { margin-left: 0; padding: 24px 20px; }
+    .hero-arch, .grid-2, .grid-3, .dual-section, .criteria-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-brand">Fundamento</div>
+  <div class="sidebar-sub">Ecossistema Editorial</div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">Visão Geral</div>
+    <a class="nav-link" href="#overview">Arquitetura</a>
+    <a class="nav-link" href="#diagnostico">Diagnóstico</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Estratégia</div>
+    <a class="nav-link" href="#naming">Naming (75 nomes)</a>
+    <a class="nav-link" href="#posicionamento">Posicionamento Verbal</a>
+    <a class="nav-link" href="#compliance">Compliance</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Conteúdo</div>
+    <a class="nav-link cc" href="#pilares-cc">Pilares Conta Certa</a>
+    <a class="nav-link nt" href="#pilares-nt">Pilares Nota Técnica</a>
+    <a class="nav-link" href="#series">Séries (40 séries)</a>
+    <a class="nav-link cc" href="#cal-cc">Calendário Leigo 30d</a>
+    <a class="nav-link nt" href="#cal-nt">Calendário Avançado 30d</a>
+    <a class="nav-link cc" href="#posts-cc">Posts Prontos Leigo</a>
+    <a class="nav-link nt" href="#posts-nt">Posts Prontos Avançado</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Design</div>
+    <a class="nav-link" href="#identidade">Identidade Visual</a>
+    <a class="nav-link" href="#templates">Templates</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-title">Operação</div>
+    <a class="nav-link" href="#workflow">Workflow</a>
+    <a class="nav-link" href="#qualidade">Critérios de Qualidade</a>
+    <a class="nav-link" href="#backlog">Backlog</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- HERO -->
+<div class="hero" id="overview">
+  <div class="section-badge badge-estrategia">Ecossistema Completo</div>
+  <h1>Fundamento</h1>
+  <p class="lead">Estratégia de marca, conteúdo, design e operação para dois perfis de educação financeira no Instagram. 19 documentos prontos para execução.</p>
+
+  <blockquote><p>Quando você entende como os números funcionam, você para de ter medo deles.</p></blockquote>
+
+  <div class="hero-arch">
+    <div class="arch-card">
+      <div class="arch-card-label">Marca guarda-chuva</div>
+      <div class="arch-card-name">Fundamento</div>
+      <div class="arch-card-handle">@fundamento.fin *</div>
+      <div class="arch-card-desc">Unifica o ecossistema. Aparece no rodapé de todos os posts. Newsletter, Lab e comunidade futura.</div>
+    </div>
+    <div class="arch-card cc">
+      <div class="arch-card-label">Perfil leigo</div>
+      <div class="arch-card-name">Conta Certa</div>
+      <div class="arch-card-handle">@contacerta.fin *</div>
+      <div class="arch-card-desc">Público geral 22-45 anos. Juros, IR, financiamento, investimentos básicos. Tom coloquial sem ser raso.</div>
+    </div>
+    <div class="arch-card nt">
+      <div class="arch-card-label">Perfil avançado</div>
+      <div class="arch-card-name">Nota Técnica</div>
+      <div class="arch-card-handle">@notatecnica.fin *</div>
+      <div class="arch-card-desc">Analistas, CFA candidates, quants. Derivativos, VaR, WACC, hedge accounting. Tom técnico, sem enrolação.</div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:var(--slate);margin-top:12px">* Todos os handles precisam de verificação manual de disponibilidade no Instagram antes de uso.</p>
+</div>
+
+<!-- DIAGNÓSTICO -->
+<section id="diagnostico">
+  <div class="section-badge badge-estrategia">Estratégia</div>
+  <h2>Diagnóstico Estratégico</h2>
+
+  <h3>Território: Autonomia de Raciocínio Financeiro</h3>
+  <p>Não é território de dicas de dinheiro. Não é coaching. É o território de quem ensina as pessoas a <em>entender como as coisas funcionam</em> para tomar decisões com clareza, não por instinto ou medo.</p>
+
+  <div class="grid-2">
+    <div class="card card-teal">
+      <div class="card-title">O que está dentro</div>
+      <div class="card-body">Mecânica de produtos financeiros · Matemática financeira aplicada · Raciocínio orçamentário · Conceitos técnicos destrinchados · Modelos e ferramentas financeiras</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--alert)">
+      <div class="card-title">O que está fora</div>
+      <div class="card-body">Recomendação de produtos · Previsões de mercado · Promessas de resultado · Coaching de comportamento · Conteúdo motivacional genérico</div>
+    </div>
+  </div>
+
+  <h3>Lacuna no Mercado</h3>
+  <table>
+    <tr><th>Tipo</th><th>Abordagem</th><th>Problema</th></tr>
+    <tr><td>Guru de investimentos</td><td>"Como ganhar X% ao mês"</td><td>Promessas, viés de sobrevivência, sem rigor</td></tr>
+    <tr><td>Página de banco/corretora</td><td>Conteúdo institucional</td><td>Conflito de interesse evidente</td></tr>
+    <tr><td>Influencer de finanças pessoais</td><td>"5 hábitos dos ricos"</td><td>Raso, comportamental demais, pouco técnico</td></tr>
+    <tr><td>Canal acadêmico</td><td>Aulas no Instagram</td><td>Formato inadequado, sem contexto real</td></tr>
+    <tr><td style="color:var(--teal);font-weight:600">Fundamento</td><td style="color:var(--teal)">Rigor técnico + clareza narrativa</td><td style="color:var(--teal)">Ocupa a lacuna: sem conflito de interesse, sem guru</td></tr>
+  </table>
+
+  <h3>Expansão do Ecossistema</h3>
+  <table>
+    <tr><th>Etapa</th><th>Componente</th><th>Gatilho</th></tr>
+    <tr><td>1</td><td>Conta Certa (Instagram)</td><td>Imediato</td></tr>
+    <tr><td>2</td><td>Nota Técnica (Instagram)</td><td>Paralelo ou 3 meses depois</td></tr>
+    <tr><td>3</td><td>Fundamento Lab (ferramentas)</td><td>5k seguidores Conta Certa</td></tr>
+    <tr><td>4</td><td>Newsletter Fundamento Básico</td><td>10k seguidores Conta Certa</td></tr>
+    <tr><td>5</td><td>Newsletter Fundamento Técnico</td><td>3k seguidores Nota Técnica</td></tr>
+    <tr><td>6</td><td>YouTube</td><td>20k combinados</td></tr>
+    <tr><td>7</td><td>Fundamento+ (comunidade premium)</td><td>18 meses + métricas de qualidade</td></tr>
+  </table>
+</section>
+
+<!-- NAMING -->
+<section id="naming">
+  <div class="section-badge badge-estrategia">Naming</div>
+  <h2>Naming — 75 Nomes Avaliados</h2>
+  <p>Cada nome avaliado em 7 dimensões (1-5): Clareza · Memorabilidade · Instagram · Sofisticação · Risco genérico · Escalabilidade · Adequação ao público.</p>
+
+  <h3>Perfil Leigo — Top 5</h3>
+  <table>
+    <tr><th>#</th><th>Nome</th><th>Pontuação</th><th>Destaque</th></tr>
+    <tr><td>1</td><td><strong>Conta Certa</strong></td><td class="score">31/35</td><td>Triplo sentido: conta bancária, cálculo, narração. Coloquial, escalável, handle limpo.</td></tr>
+    <tr><td>2</td><td>Dinheiro em Português</td><td class="score">29</td><td>"Em Português" = explica de forma simples. Muito shareable.</td></tr>
+    <tr><td>3</td><td>A Conta Fecha</td><td class="score">28</td><td>Expressão idiomática com calor humano. Handle @acontafecha é o ponto fraco.</td></tr>
+    <tr><td>4</td><td>Extrato Claro</td><td class="score">28</td><td>Metáfora visual: extrato = o que é obscuro. "Claro" no duplo sentido.</td></tr>
+    <tr><td>5</td><td>Fim do Economês</td><td class="score">27</td><td>Combativo e narrativo. O problema que resolve está embutido no nome.</td></tr>
+  </table>
+
+  <h3>Perfil Avançado — Top 5</h3>
+  <table>
+    <tr><th>#</th><th>Nome</th><th>Pontuação</th><th>Destaque</th></tr>
+    <tr><td>1</td><td><strong>Nota Técnica</strong></td><td class="score">31/35</td><td>Gênero textual real de reguladores e gestoras. Sinaliza precisão antes de clicar.</td></tr>
+    <tr><td>2</td><td>Risco Calculado</td><td class="score">30</td><td>Double meaning: expressão idiomática + sentido técnico de risco quantificado.</td></tr>
+    <tr><td>3</td><td>Curva de Juros</td><td class="score">29</td><td>Conceito técnico real. Quem não sabe provavelmente não é o público-alvo.</td></tr>
+    <tr><td>4</td><td>Delta Financeiro</td><td class="score">28</td><td>Letra grega do vocabulário diário do público-alvo. Curto, internacional.</td></tr>
+    <tr><td>5</td><td>Prêmio de Risco</td><td class="score">28</td><td>Termo preciso da teoria de finanças. Sinaliza nível elevado imediatamente.</td></tr>
+  </table>
+
+  <h3>Marca Guarda-Chuva — Top 3</h3>
+  <table>
+    <tr><th>#</th><th>Nome</th><th>Pontuação</th><th>Destaque</th></tr>
+    <tr><td>1</td><td><strong>Fundamento</strong></td><td class="score">30/35</td><td>Base sólida + fundamentals em inglês + análise fundamentalista. Funciona nos dois mundos.</td></tr>
+    <tr><td>2</td><td>Lente Financeira</td><td class="score">28</td><td>Metáfora epistêmica: não diz "sei mais que você", diz "te ajudo a enxergar melhor".</td></tr>
+    <tr><td>3</td><td>Lab Financeiro</td><td class="score">28</td><td>Evoca experimentação. Justifica calculadoras, modelos, templates. Escalável.</td></tr>
+  </table>
+
+  <div class="card card-accent" style="margin-top:24px">
+    <div class="card-title">Arquitetura Final Recomendada</div>
+    <div class="card-body" style="font-family:monospace;font-size:13px;color:var(--white);line-height:2">
+      FUNDAMENTO<br>
+      &nbsp;&nbsp;|__ @contacerta.fin &nbsp;&nbsp;&nbsp;&nbsp; (perfil leigo)<br>
+      &nbsp;&nbsp;|__ @notatecnica.fin &nbsp;&nbsp; (perfil avançado)<br>
+      &nbsp;&nbsp;|__ Fundamento Semanal &nbsp;(newsletter)<br>
+      &nbsp;&nbsp;|__ Fundamento Lab &nbsp;&nbsp;&nbsp;&nbsp; (ferramentas)<br>
+      &nbsp;&nbsp;|__ Fundamento+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (comunidade premium)
+    </div>
+  </div>
+</section>
+
+<!-- POSICIONAMENTO -->
+<section id="posicionamento">
+  <div class="section-badge badge-estrategia">Posicionamento Verbal</div>
+  <h2>Posicionamento Verbal</h2>
+
+  <div class="dual-section">
+    <div class="dual-col-cc">
+      <div class="dual-label dual-label-cc">Conta Certa — Bio</div>
+      <div class="disclaimer-box">Finanças sem economês.<br>Juros, orçamento, IR, financiamento e investimentos explicados do jeito que a escola não ensinou.<br>por @fundamento.fin</div>
+      <p style="font-size:12px">Tom: professor de matemática que sabe ser acessível sem infantilizar. Frases curtas, exemplos numéricos reais (nunca "R$ X mil"), pergunta antes de responder.</p>
+    </div>
+    <div class="dual-col-nt">
+      <div class="dual-label dual-label-nt">Nota Técnica — Bio</div>
+      <div class="disclaimer-box">Derivativos, risco, valuation e modelos financeiros.<br>Conteúdo técnico sem enrolação para quem trabalha com o mercado.<br>por @fundamento.fin</div>
+      <p style="font-size:12px">Tom: analista sênior escrevendo para o time. Usa nomenclatura técnica sem desculpas. Direto, denso, referencia fontes quando relevante.</p>
+    </div>
+  </div>
+
+  <h3>Palavras Proibidas (em ambos os perfis)</h3>
+  <div class="grid-3">
+    <div class="card"><div class="card-body"><span class="forbidden">Liberdade financeira</span> — clichê sem significado específico</div></div>
+    <div class="card"><div class="card-body"><span class="forbidden">Fique rico</span> — promessa sem base</div></div>
+    <div class="card"><div class="card-body"><span class="forbidden">Renda passiva</span> — associado a esquemas</div></div>
+    <div class="card"><div class="card-body"><span class="forbidden">Mude sua vida</span> — linguagem de guru motivacional</div></div>
+    <div class="card"><div class="card-body"><span class="forbidden">Mindset</span> — psicologia pop fora de contexto</div></div>
+    <div class="card"><div class="card-body"><span class="forbidden">É simples</span> — simplifica o que tem nuances</div></div>
+  </div>
+
+  <h3>Palavras Preferenciais</h3>
+  <div class="dual-section">
+    <div class="dual-col-cc">
+      <div class="dual-label dual-label-cc">Conta Certa</div>
+      <table>
+        <tr><td><span class="preferred">Funciona assim</span></td><td style="font-size:12px">Indica mecanismo, não opinião</td></tr>
+        <tr><td><span class="preferred">Na prática</span></td><td style="font-size:12px">Ancora no real</td></tr>
+        <tr><td><span class="preferred">Vamos calcular</span></td><td style="font-size:12px">Convida, não impõe</td></tr>
+        <tr><td><span class="preferred">Depende de...</span></td><td style="font-size:12px">Honesto sobre variáveis</td></tr>
+        <tr><td><span class="preferred">Passo a passo</span></td><td style="font-size:12px">Didático sem infantilizar</td></tr>
+      </table>
+    </div>
+    <div class="dual-col-nt">
+      <div class="dual-label dual-label-nt">Nota Técnica</div>
+      <table>
+        <tr><td><span style="color:var(--electric);font-weight:600">A hipótese aqui é...</span></td><td style="font-size:12px">Reconhece premissas</td></tr>
+        <tr><td><span style="color:var(--electric);font-weight:600">O modelo assume que...</span></td><td style="font-size:12px">Honesto sobre limitações</td></tr>
+        <tr><td><span style="color:var(--electric);font-weight:600">A intuição por trás é...</span></td><td style="font-size:12px">Conecta fórmula ao raciocínio</td></tr>
+        <tr><td><span style="color:var(--electric);font-weight:600">A literatura sugere</span></td><td style="font-size:12px">Âncora acadêmica</td></tr>
+        <tr><td><span style="color:var(--electric);font-weight:600">É uma simplificação, mas...</span></td><td style="font-size:12px">Honesto sobre trade-offs</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Exemplos de Títulos</h3>
+  <table>
+    <tr><th>Ruim</th><th>Bom</th></tr>
+    <tr><td style="color:var(--slate)">"Como investir do zero"</td><td>"Por que seu CDB rende diferente do CDI (e como calcular a diferença)"</td></tr>
+    <tr><td style="color:var(--slate)">"5 dicas para economizar"</td><td>"Como o juro rotativo do cartão funciona: o cálculo que ninguém te mostra"</td></tr>
+    <tr><td style="color:var(--slate)">"O que é Selic?"</td><td>"A Selic subiu. O que muda no seu CDB, na sua poupança e no seu financiamento"</td></tr>
+    <tr><td style="color:var(--slate)">"Entenda o WACC"</td><td>"WACC: os três erros de estimação mais comuns e por que o beta histórico não é suficiente"</td></tr>
+    <tr><td style="color:var(--slate)">"O que são derivativos?"</td><td>"Estrutura de payoff: como ler um diagrama de opções sem confundir com o gráfico de lucro"</td></tr>
+  </table>
+</section>
+
+<!-- COMPLIANCE -->
+<section id="compliance">
+  <div class="section-badge badge-estrategia">Compliance</div>
+  <h2>Compliance e Limites Regulatórios</h2>
+
+  <div class="grid-2">
+    <div class="compliance-block">
+      <h4 style="color:var(--alert);margin-top:0">Proibido</h4>
+      <p style="font-size:13px">Indicar produto específico para comprar/vender · Prometer rentabilidade · Analisar situação pessoal de seguidor · Fazer previsão de mercado como certeza</p>
+    </div>
+    <div class="compliance-block compliance-block-ok">
+      <h4 style="color:var(--teal);margin-top:0">Permitido</h4>
+      <p style="font-size:13px">Explicar como um produto funciona · Apresentar dados históricos com contexto · Usar ativos como exemplos didáticos · Comparar produtos metodologicamente</p>
+    </div>
+  </div>
+
+  <h3>Disclaimer Padrão</h3>
+  <div class="disclaimer-box">Conteúdo educacional. Não é recomendação de investimento.<br>Rentabilidade passada não garante rentabilidade futura.<br>Para decisões de investimento, consulte um profissional habilitado.</div>
+
+  <h3>Referências Regulatórias</h3>
+  <table>
+    <tr><th>Norma</th><th>Contexto</th></tr>
+    <tr><td>Instrução CVM 598/2018</td><td>Analistas de valores mobiliários: quem pode recomendar ativos</td></tr>
+    <tr><td>Resolução CVM 179/2023</td><td>Distribuição de produtos de investimento</td></tr>
+    <tr><td>Código ANBIMA de Educação Financeira</td><td>Boas práticas para conteúdo educacional</td></tr>
+    <tr><td>CPC 48 / IFRS 9</td><td>Instrumentos financeiros e hedge accounting (Nota Técnica)</td></tr>
+  </table>
+</section>
+
+<!-- PILARES CC -->
+<section id="pilares-cc">
+  <div class="section-badge badge-cc">Conta Certa</div>
+  <h2>Pilares de Conteúdo — Conta Certa</h2>
+
+  <div class="pilar">
+    <div class="pilar-num">Pilar 1</div>
+    <div class="pilar-title">Extrato por Dentro</div>
+    <div class="pilar-body">Tornar o extrato bancário, fatura do cartão e holerite legíveis. A maioria paga as contas sem entender o que está pagando.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Carrossel 10-15 slides</span><span class="tag tag-teal">Comparativo</span><span class="tag tag-teal">Checklist</span></div>
+  </div>
+  <div class="pilar">
+    <div class="pilar-num">Pilar 2</div>
+    <div class="pilar-title">Juros na Prática</div>
+    <div class="pilar-body">Desmistificar a matemática dos juros: simples, compostos, nominais, reais, CET, spread. As pessoas sabem que "juros são ruins" mas não entendem a mecânica.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Simulação numérica</span><span class="tag tag-teal">Gráfico de crescimento</span></div>
+  </div>
+  <div class="pilar">
+    <div class="pilar-num">Pilar 3</div>
+    <div class="pilar-title">Financiamento e Crédito</div>
+    <div class="pilar-body">SAC vs. Price, financiamento imobiliário, veículo, consignado, cartão, portabilidade. As pessoas contratam crédito sem entender o que estão comprando.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Simulação mês a mês</span><span class="tag tag-teal">Comparativo</span></div>
+  </div>
+  <div class="pilar">
+    <div class="pilar-num">Pilar 4</div>
+    <div class="pilar-title">Imposto de Renda e Documentos</div>
+    <div class="pilar-body">IRPF: quem declara, rendimentos, deduções, tributação de investimentos, come-cotas, carnê-leão. O IR assusta porque ninguém explica a lógica.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Checklist visual</span><span class="tag tag-teal">Tabela progressiva</span></div>
+  </div>
+  <div class="pilar">
+    <div class="pilar-num">Pilar 5</div>
+    <div class="pilar-title">Primeiros Investimentos</div>
+    <div class="pilar-body">Poupança, CDB, LCI, Tesouro, fundos, ações, FIIs, ETF. O medo de investir é frequentemente medo de não entender.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Tabela comparativa</span><span class="tag tag-teal">Glossário visual</span></div>
+  </div>
+  <div class="pilar">
+    <div class="pilar-num">Pilar 6</div>
+    <div class="pilar-title">Inflação e o Valor do Dinheiro</div>
+    <div class="pilar-body">Poder de compra, IPCA, IGPM, taxa real de retorno. A maioria sabe que "o dinheiro perde valor" mas não sabe calcular quanto.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Simulação histórica</span><span class="tag tag-teal">Comparativo nominal vs. real</span></div>
+  </div>
+  <div class="pilar">
+    <div class="pilar-num">Pilar 7</div>
+    <div class="pilar-title">Decisões Financeiras do Cotidiano</div>
+    <div class="pilar-body">Comprar ou alugar, parcelar ou pagar à vista, PGBL vs. VGBL, previdência privada. Não diz o que decidir. Mostra como estruturar a pergunta certa.</div>
+    <div style="margin-top:10px"><span class="tag tag-teal">Post "depende de"</span><span class="tag tag-teal">Comparativo de cenários</span></div>
+  </div>
+</section>
+
+<!-- PILARES NT -->
+<section id="pilares-nt">
+  <div class="section-badge badge-nt">Nota Técnica</div>
+  <h2>Pilares de Conteúdo — Nota Técnica</h2>
+
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 1</div>
+    <div class="pilar-title" style="color:var(--electric)">Derivativos e Estruturas</div>
+    <div class="pilar-body">Payoff de opções, gregas, Black-Scholes, swaps, futuros DI, estruturas compostas (collar, straddle, butterfly), exóticas. Para analistas de risco, gestores, CFA/FRM.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Cheat sheet de payoff</span><span class="tag tag-blue">Carrossel técnico</span></div>
+  </div>
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 2</div>
+    <div class="pilar-title" style="color:var(--electric)">Risco e Métricas Quantitativas</div>
+    <div class="pilar-body">VaR, CVaR, volatilidade, correlação, copulas, beta, tracking error, stress testing, Basileia III. Para analistas de risco de mercado e crédito.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Fórmulas anotadas</span><span class="tag tag-blue">Tabelas comparativas</span></div>
+  </div>
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 3</div>
+    <div class="pilar-title" style="color:var(--electric)">Curva de Juros e Renda Fixa</div>
+    <div class="pilar-body">ETTJ, taxas spot vs. forward, bootstrap, duration, convexidade, imunização, futuros DI, marked-to-market, spread de crédito. Para gestores de renda fixa e CFA nível 2-3.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Cheat sheet de fórmulas</span><span class="tag tag-blue">Construção passo a passo</span></div>
+  </div>
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 4</div>
+    <div class="pilar-title" style="color:var(--electric)">Valuation e Modelagem Financeira</div>
+    <div class="pilar-body">DCF, FCFF vs. FCFE, WACC, valor terminal, múltiplos (EV/EBITDA, P/L), APV, modelagem 3-demonstrações, LBO. Para analistas M&A, equity research, PE.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Modelo comentado</span><span class="tag tag-blue">Tabela de sensibilidade</span></div>
+  </div>
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 5</div>
+    <div class="pilar-title" style="color:var(--electric)">Hedge Accounting e Finanças Corporativas</div>
+    <div class="pilar-body">CPC 48/IFRS 9, hedge de valor justo vs. fluxo de caixa, teste de efetividade, MM, trade-off theory, pecking order. Para controllers e auditores.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Lançamentos contábeis</span><span class="tag tag-blue">Cheat sheet CPC 48</span></div>
+  </div>
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 6</div>
+    <div class="pilar-title" style="color:var(--electric)">Matemática Quantitativa Aplicada</div>
+    <div class="pilar-body">Movimento Browniano, Lema de Itô, Black-Scholes, Monte Carlo, OLS, GARCH, séries temporais, PCA. Para quants, engenheiros migrando para finanças.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Derivação passo a passo</span><span class="tag tag-blue">Código Python/R mencionado</span></div>
+  </div>
+  <div class="pilar" style="border-left:3px solid var(--blue)">
+    <div class="pilar-num">Pilar 7</div>
+    <div class="pilar-title" style="color:var(--electric)">Mercado de Capitais e Regulação</div>
+    <div class="pilar-body">B3, CVM, ANBIMA, IPO, debêntures, CRI/CRA, FIDCs, fundos, private equity. Para profissionais do mercado e candidatos a CEA/CFP/CFA.</div>
+    <div style="margin-top:10px"><span class="tag tag-blue">Mapa de participantes</span><span class="tag tag-blue">Cheat sheet de regulação</span></div>
+  </div>
+</section>
+
+<!-- SÉRIES -->
+<section id="series">
+  <div class="section-badge badge-estrategia">Conteúdo</div>
+  <h2>Séries Recorrentes — 40 Séries Total</h2>
+
+  <div class="dual-section">
+    <div class="dual-col-cc">
+      <div class="dual-label dual-label-cc">Conta Certa — 20 Séries</div>
+
+      <div class="serie">
+        <div class="serie-num">01</div>
+        <div class="serie-content">
+          <div class="serie-title">Extrato em Aberto</div>
+          <div class="serie-freq">Mensal</div>
+          <div class="serie-desc">Analisa um documento financeiro linha por linha. Fatura, holerite, extrato, contrato.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">02</div>
+        <div class="serie-content">
+          <div class="serie-title">O Número que Muda</div>
+          <div class="serie-freq">Semanal</div>
+          <div class="serie-desc">Um único número por edição: o que é, que decisão afeta. CET, IPCA, Selic, spread.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">03</div>
+        <div class="serie-content">
+          <div class="serie-title">Fórmula Traduzida</div>
+          <div class="serie-freq">Quinzenal</div>
+          <div class="serie-desc">Fórmula assustadora → cada pedaço explicado → cálculo com números reais → resultado.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">04</div>
+        <div class="serie-content">
+          <div class="serie-title">Antes do IR</div>
+          <div class="serie-freq">Sazonal (jan-abr)</div>
+          <div class="serie-desc">Série completa de preparação para o IRPF. Checklist em jan, conceitos em fev, guia em mar.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">05</div>
+        <div class="serie-content">
+          <div class="serie-title">Simulei Pra Você</div>
+          <div class="serie-freq">Semanal</div>
+          <div class="serie-desc">Roda uma simulação que o leitor não faria sozinho. Juros compostos, custo de dívida, efeito do tempo.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">06</div>
+        <div class="serie-content">
+          <div class="serie-title">Erro Clássico</div>
+          <div class="serie-freq">Quinzenal</div>
+          <div class="serie-desc">Erro financeiro comum sem julgamento. Por que parece razoável, o custo real, a alternativa.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">07</div>
+        <div class="serie-content">
+          <div class="serie-title">Economês para Gente</div>
+          <div class="serie-freq">Semanal</div>
+          <div class="serie-desc">Glossário visual. Termo técnico → o que o mercado diz → o que significa de verdade → exemplo numérico.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">08</div>
+        <div class="serie-content">
+          <div class="serie-title">SAC vs. Price</div>
+          <div class="serie-freq">Trimestral</div>
+          <div class="serie-desc">Mesmo imóvel, mesmo banco, tabelas diferentes. Resultado matemático completo. Sem recomendar.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">09</div>
+        <div class="serie-content">
+          <div class="serie-title">Depende de...</div>
+          <div class="serie-freq">Quinzenal</div>
+          <div class="serie-desc">Estrutura correta para perguntas sem resposta universal: quitar ou investir? comprar ou alugar?</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">10</div>
+        <div class="serie-content">
+          <div class="serie-title">Café com Conta</div>
+          <div class="serie-freq">Semanal (sextas)</div>
+          <div class="serie-desc">A única série levemente pessoal. Reflexão sobre decisão financeira com raciocínio explicitado.</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-top:8px">+ 10 séries adicionais: O Banco Não Explica, A Inflação Comeu, Primeira Vez, Quem Paga Mais, Três Números, Régua do Mês, O Que Mudou, Checklist Financeiro, Finanças de Bolso, O Que o Contrato Diz.</p>
+    </div>
+
+    <div class="dual-col-nt">
+      <div class="dual-label dual-label-nt">Nota Técnica — 20 Séries</div>
+
+      <div class="serie">
+        <div class="serie-num">01</div>
+        <div class="serie-content">
+          <div class="serie-title">Nota da Semana</div>
+          <div class="serie-freq">Semanal (sextas)</div>
+          <div class="serie-desc">Série central. Análise técnica com estrutura fixa: contexto, questão técnica, metodologia, implicação prática.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">02</div>
+        <div class="serie-content">
+          <div class="serie-title">Cheat Sheet Técnico</div>
+          <div class="serie-freq">Semanal (terças)</div>
+          <div class="serie-desc">Folha de referência densa. Fórmulas principais, parâmetros, relações. Sem explicação longa. A densidade é o ponto.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">03</div>
+        <div class="serie-content">
+          <div class="serie-title">O Greek do Dia</div>
+          <div class="serie-freq">Quinzenal</div>
+          <div class="serie-desc">Desmonta uma grega de opções: definição formal, intuição, fórmula, sinal em posições long/short.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">04</div>
+        <div class="serie-content">
+          <div class="serie-title">Valuation de A a Z</div>
+          <div class="serie-freq">Série de 12 episódios</div>
+          <div class="serie-desc">Framework completo de valuation. Do valor temporal (ep.1) ao LBO (ep.12).</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">05</div>
+        <div class="serie-content">
+          <div class="serie-title">Hedge em Prática</div>
+          <div class="serie-freq">Mensal</div>
+          <div class="serie-desc">Estrutura de hedge do início ao fim: objeto protegido, instrumento, lançamento contábil, teste de efetividade.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">06</div>
+        <div class="serie-content">
+          <div class="serie-title">Controvérsia Técnica</div>
+          <div class="serie-freq">Mensal</div>
+          <div class="serie-desc">Debate metodológico genuíno: CAPM vs. Fama-French, VaR vs. CVaR, WACC vs. APV. Dois lados com rigor.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">07</div>
+        <div class="serie-content">
+          <div class="serie-title">ETTJ Destrinchada</div>
+          <div class="serie-freq">Trimestral (3 eps)</div>
+          <div class="serie-desc">Ep.1: conceitos e teorias. Ep.2: taxas forward. Ep.3: imunização de portfólio.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">08</div>
+        <div class="serie-content">
+          <div class="serie-title">O Que o Paper Diz</div>
+          <div class="serie-freq">Mensal</div>
+          <div class="serie-desc">Paper acadêmico relevante: problema, metodologia, resultado, limitação, implicação prática.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">09</div>
+        <div class="serie-content">
+          <div class="serie-title">Fórmula Derivada</div>
+          <div class="serie-freq">Quinzenal</div>
+          <div class="serie-desc">Parte de uma fórmula conhecida e mostra de onde ela vem. Intuição matemática, derivação passo a passo.</div>
+        </div>
+      </div>
+      <div class="serie">
+        <div class="serie-num">10</div>
+        <div class="serie-content">
+          <div class="serie-title">Bootstrap na Prática</div>
+          <div class="serie-freq">Trimestral</div>
+          <div class="serie-desc">Curva zero-coupon a partir de instrumentos com cupom. Cada iteração com números reais do DI Futuro.</div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-top:8px">+ 10 séries adicionais: Risco em Camadas, O Modelo Funcionando, Curva Aberta, Mesa Quant, Estatística para Finanças, DCF com Dados Reais, Regulatório em Números, Múltiplos em Detalhe, Estrutura Corporativa, Prêmio de Risco Destrinchado.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CALENDÁRIO CC -->
+<section id="cal-cc">
+  <div class="section-badge badge-cc">Conta Certa</div>
+  <h2>Calendário Editorial — 30 Dias (Conta Certa)</h2>
+  <p>Semana 1: fundação · Semana 2: crédito e dívida · Semana 3: investimentos e IR · Semana 4: decisões integradas.</p>
+
+  <h3>Semana 1 — Fundação</h3>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">1</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"O que você vai encontrar aqui (e o que não vai)"</div><div class="cal-meta">Apresentação · Carrossel 8 slides <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">2</div><div class="dow">Ter</div></div><div class="cal-day-content"><div class="cal-titulo">"Juro simples e juro composto: parece a mesma coisa. Não é. Simulei."</div><div class="cal-meta">Juros · Carrossel 10 slides com simulação <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">3</div><div class="dow">Qua</div></div><div class="cal-day-content"><div class="cal-titulo">"CDI: o número que determina quanto você ganha em quase todo investimento de renda fixa"</div><div class="cal-meta">CDI · Carrossel 8 slides <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">4</div><div class="dow">Qui</div></div><div class="cal-day-content"><div class="cal-titulo">"Série: Extrato em Aberto #1. O holerite linha por linha."</div><div class="cal-meta">Holerite · Carrossel 12 slides <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">5</div><div class="dow">Sex</div></div><div class="cal-day-content"><div class="cal-titulo">"A fórmula de 2 segundos para saber em quanto tempo seu dinheiro dobra"</div><div class="cal-meta">Regra de 72 · Post + carrossel curto <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+
+  <h3>Semana 2 — Crédito e Dívida</h3>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">8</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"Juro rotativo do cartão: o que acontece se você pagar só o mínimo por 6 meses"</div><div class="cal-meta">Cartão · Carrossel 12 slides com simulação mês a mês <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">9</div><div class="dow">Ter</div></div><div class="cal-day-content"><div class="cal-titulo">"O Número que Muda #1: CET. O banco coloca pequeno porque é o que importa."</div><div class="cal-meta">CET · Carrossel 8 slides <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">11</div><div class="dow">Qui</div></div><div class="cal-day-content"><div class="cal-titulo">"SAC vs. Price #1: R$ 300.000 financiados em 20 anos. Qual custou mais?"</div><div class="cal-meta">SAC/Price · Carrossel 14 slides <span class="cal-nivel nivel-i">Intermediário</span></div></div></div>
+
+  <h3>Semana 3 — Investimentos e IR</h3>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">15</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"A inflação comeu: R$ 1.000 guardados há 5 anos. Quanto eles valem hoje?"</div><div class="cal-meta">Inflação · Carrossel 10 slides <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">16</div><div class="dow">Ter</div></div><div class="cal-day-content"><div class="cal-titulo">"Poupança ou CDB 100% CDI: simulei R$ 10.000 por 12 meses. A diferença foi essa."</div><div class="cal-meta">Poupança vs. CDB · Carrossel comparativo <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">18</div><div class="dow">Qui</div></div><div class="cal-day-content"><div class="cal-titulo">"Quanto você paga de IR nos seus investimentos (e quais são isentos)"</div><div class="cal-meta">Tributação · Carrossel 10 slides com tabela <span class="cal-nivel nivel-i">Intermediário</span></div></div></div>
+
+  <h3>Semana 4 — Decisões Integradas</h3>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">22</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"Comprar ou alugar? As 7 variáveis do cálculo que ninguém te mostra"</div><div class="cal-meta">Imóvel · Carrossel 14 slides <span class="cal-nivel nivel-i">Intermediário</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">24</div><div class="dow">Qua</div></div><div class="cal-day-content"><div class="cal-titulo">"PGBL ou VGBL? Depende do seu IR. Veja o critério correto."</div><div class="cal-meta">Previdência · Carrossel 12 slides <span class="cal-nivel nivel-i">Intermediário</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">30</div><div class="dow">Ter</div></div><div class="cal-day-content"><div class="cal-titulo">"30 dias aqui. O que ensinamos, o que vem a seguir e o que você deveria ter salvo"</div><div class="cal-meta">Balanço · Carrossel 8 slides <span class="cal-nivel nivel-b">Básico</span></div></div></div>
+</section>
+
+<!-- CALENDÁRIO NT -->
+<section id="cal-nt">
+  <div class="section-badge badge-nt">Nota Técnica</div>
+  <h2>Calendário Editorial — 30 Dias (Nota Técnica)</h2>
+  <p>Semana 1: fundação técnica · Semana 2: derivativos e risco · Semana 3: valuation e modelagem · Semana 4: hedge e mercado de capitais.</p>
+
+  <div class="cal-day"><div class="cal-day-num"><div class="num">1</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"O que você vai encontrar aqui: rigor técnico, sem enrolação"</div><div class="cal-meta">Apresentação · Carrossel 8 slides <span class="cal-nivel nivel-i">I</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">2</div><div class="dow">Ter</div></div><div class="cal-day-content"><div class="cal-titulo">"Cheat Sheet #1: Delta, Gamma, Vega, Theta e Rho. Fórmulas, sinais e intuição em uma folha."</div><div class="cal-meta">Gregas · Cheat sheet <span class="cal-nivel nivel-a">A</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">3</div><div class="dow">Qua</div></div><div class="cal-day-content"><div class="cal-titulo">"Duration: a fórmula, a intuição, e por que a relação preço-taxa não é simétrica"</div><div class="cal-meta">Duration · Carrossel 12 slides <span class="cal-nivel nivel-a">A</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">4</div><div class="dow">Qui</div></div><div class="cal-day-content"><div class="cal-titulo">"Risco em Camadas #1: VaR. O que o número diz, o que esconde e por que o CVaR é mais honesto."</div><div class="cal-meta">VaR/CVaR · Carrossel 10 slides <span class="cal-nivel nivel-a">A</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">5</div><div class="dow">Sex</div></div><div class="cal-day-content"><div class="cal-titulo">"Nota da Semana #1: ETTJ. Teorias, construção e o que cada segmento da curva sinaliza"</div><div class="cal-meta">ETTJ · Carrossel 12 slides <span class="cal-nivel nivel-a">A</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">15</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"Valuation de A a Z #1: WACC. Os 3 erros de estimação mais frequentes em modelos reais."</div><div class="cal-meta">WACC · Carrossel 14 slides <span class="cal-nivel nivel-a">A</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">22</div><div class="dow">Seg</div></div><div class="cal-day-content"><div class="cal-titulo">"Hedge em Prática #1: hedge de valor justo vs. hedge de fluxo de caixa. A diferença nos lançamentos."</div><div class="cal-meta">CPC 48 · Carrossel 14 slides <span class="cal-nivel nivel-a">A</span></div></div></div>
+  <div class="cal-day"><div class="cal-day-num"><div class="num">25</div><div class="dow">Qui</div></div><div class="cal-day-content"><div class="cal-titulo">"Estrutura Corporativa #1: o que Modigliani-Miller realmente diz (e por que as premissas impossíveis são o ponto)"</div><div class="cal-meta">MM · Carrossel 12 slides <span class="cal-nivel nivel-a">A</span></div></div></div>
+</section>
+
+<!-- POSTS CC -->
+<section id="posts-cc">
+  <div class="section-badge badge-cc">Conta Certa</div>
+  <h2>Posts Prontos — Conta Certa (10 Posts Completos)</h2>
+
+  <div class="post-card">
+    <div class="post-num">Post 1</div>
+    <div class="post-title">"O que acontece com R$ 1.000 no cartão se você pagar só o mínimo por 6 meses"</div>
+    <ul class="slide-list">
+      <li class="slide-item"><span class="slide-num">Slide 1</span><span class="slide-text">Capa: "Você sabe o que acontece com R$ 1.000 de dívida no cartão depois de 6 meses pagando só o mínimo?"</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 2</span><span class="slide-text">Dados: taxa rotativo 15% a.m. (exemplo ilustrativo), dívida inicial R$ 1.000,00</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 3-4</span><span class="slide-text">Tabela mês a mês. Com mínimo = 15%: saldo não cai. A dívida não sai do lugar nunca.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 5-6</span><span class="slide-text">Se mínimo for 5% (R$ 50): gráfico de crescimento exponencial. Após 6 meses: mais de R$ 1.800.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 7</span><span class="slide-text">Por que isso acontece? A taxa incide sobre o saldo atual, que já inclui os juros anteriores.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 8-9</span><span class="slide-text">Comparação: quitar de uma vez vs. 6 meses de mínimo. 3 opções sem julgamento.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 10</span><span class="slide-text">Encerramento: "O cartão não é vilão. O juro rotativo é o problema." + Disclaimer.</span></li>
+    </ul>
+    <div class="post-cta">CTA: "Salva esse post e abre a sua fatura agora. Você sabe qual é a taxa de juros do seu rotativo?"</div>
+  </div>
+
+  <div class="post-card">
+    <div class="post-num">Post 3</div>
+    <div class="post-title">"SAC ou Price? Simulei os dois para R$ 300.000 em 20 anos. A diferença foi de R$ 43.200."</div>
+    <ul class="slide-list">
+      <li class="slide-item"><span class="slide-num">Slides 1-2</span><span class="slide-text">Capa + dados: R$ 300.000, 10% a.a., 240 meses</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 3-4</span><span class="slide-text">Como funciona SAC (amortização constante, parcela decrescente) vs. Price (parcela constante, amortização crescente)</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 5-7</span><span class="slide-text">Primeiros 12 meses comparados. Saldo devedor após 12 meses. Total pago em 240 meses com diferença.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 8-10</span><span class="slide-text">Mas não é só sobre o total: SAC exige parcelas maiores no início. Checklist de quando cada uma faz sentido.</span></li>
+    </ul>
+    <div class="post-cta">CTA: "Qual tabela seu financiamento usa? Perguntar ao banco é grátis."</div>
+  </div>
+
+  <div class="post-card">
+    <div class="post-num">Post 7</div>
+    <div class="post-title">"Por que o valor do meu Tesouro IPCA+ caiu se eu não vendi?"</div>
+    <ul class="slide-list">
+      <li class="slide-item"><span class="slide-num">Slides 1-3</span><span class="slide-text">Capa + o que é marcação a mercado + analogia do apartamento: você não perdeu nada se não vender.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 4</span><span class="slide-text">Relação fundamental: juros sobem → preço do título cai. Juros caem → preço sobe.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 5-6</span><span class="slide-text">Por quê? Ninguém paga preço cheio por título que rende menos que o mercado atual. Exemplo numérico.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 7-9</span><span class="slide-text">Isso significa que perdi? Não, se levar até o vencimento. Quando a marcação importa: se precisar vender antes.</span></li>
+    </ul>
+    <div class="post-cta">CTA: "Você tem título do Tesouro? Veja no portal qual é a data de vencimento."</div>
+  </div>
+
+  <p style="color:var(--slate);font-size:13px">+ 7 posts adicionais prontos: Juro Simples vs. Composto · IRPF Tabela Progressiva · O que é CDI · Poupança vs. CDB · PGBL vs. VGBL · Come-Cotas · Regra de 72</p>
+</section>
+
+<!-- POSTS NT -->
+<section id="posts-nt">
+  <div class="section-badge badge-nt">Nota Técnica</div>
+  <h2>Posts Prontos — Nota Técnica (10 Posts Completos)</h2>
+
+  <div class="post-card" style="border-top:2px solid var(--blue)">
+    <div class="post-num">Post 1</div>
+    <div class="post-title">"Duration Modificada e Convexidade: a segunda ordem que muda a gestão de portfólio de renda fixa"</div>
+    <ul class="slide-list">
+      <li class="slide-item"><span class="slide-num">Slide 2</span><span class="slide-text">Duration Macaulay: DM = Σ[t × PV(CFt)] / Preço. Prazo médio ponderado pelo PV dos fluxos.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 3</span><span class="slide-text">Duration Modificada: DMod = DM/(1+y). Interpretação: ΔP/P ≈ -DMod × Δy</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 4-5</span><span class="slide-text">Exemplo numérico: DMod = 7. +100bps → -7%. Mas a relação não é simétrica. Por quê? Convexidade.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 6-7</span><span class="slide-text">Fórmula de convexidade. Ajuste completo: ΔP/P ≈ -DMod × Δy + ½ × C × (Δy)². Exemplo com +200bps.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 8-9</span><span class="slide-text">O que maior convexidade significa. Aplicação em imunização de portfólio.</span></li>
+    </ul>
+    <div class="formula">ΔP/P ≈ -DMod × Δy + ½ × C × (Δy)²</div>
+    <div class="post-cta">CTA: "Calcule a convexidade do título de maior prazo na sua carteira."</div>
+  </div>
+
+  <div class="post-card" style="border-top:2px solid var(--blue)">
+    <div class="post-num">Post 4</div>
+    <div class="post-title">"WACC: os 3 erros de estimação mais frequentes em modelos de valuation"</div>
+    <ul class="slide-list">
+      <li class="slide-item"><span class="slide-num">Slide 2</span><span class="slide-text">Fórmula: WACC = (E/V)×Re + (D/V)×Rd×(1-T)</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 3-4</span><span class="slide-text">Erro 1: usar beta histórico sem ajuste. Alternativa: beta setorial Damodaran, re-alavancado. Fórmula de Hamada.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 5</span><span class="slide-text">Erro 2: usar valor contábil em vez de mercado nos pesos E/V e D/V.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 6</span><span class="slide-text">Erro 3: custo da dívida sem ajustar para alíquota efetiva real. Empresa com prejuízo fiscal: benefício pode não se materializar.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 7-9</span><span class="slide-text">ERP: Re = Rf + β × ERP + CRP. Análise de sensibilidade: tabela WACC × crescimento terminal.</span></li>
+    </ul>
+    <div class="formula">β_L = β_U × [1 + (1-T) × (D/E)]  &nbsp;&nbsp; (Hamada)</div>
+    <div class="post-cta">CTA: "Pegue seu último modelo DCF. Qual fonte de beta você usou?"</div>
+  </div>
+
+  <div class="post-card" style="border-top:2px solid var(--blue)">
+    <div class="post-num">Post 5</div>
+    <div class="post-title">"Hedge de Valor Justo vs. Hedge de Fluxo de Caixa: a diferença que aparece no balanço"</div>
+    <ul class="slide-list">
+      <li class="slide-item"><span class="slide-num">Slides 2-4</span><span class="slide-text">CPC 48 define 3 tipos. Hedge de valor justo: objeto = ativo/passivo reconhecido. Variações do instrumento E objeto → resultado simultaneamente.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 5-6</span><span class="slide-text">Hedge de fluxo de caixa: objeto = fluxo variável ou projetado. Parcela efetiva → OCI. Migra para resultado quando objeto protegido afeta DRE.</span></li>
+      <li class="slide-item"><span class="slide-num">Slides 7-8</span><span class="slide-text">Quadro comparativo. O que vai para resultado vs. OCI no CFH. Somente a parcela efetiva.</span></li>
+      <li class="slide-item"><span class="slide-num">Slide 9</span><span class="slide-text">Critérios de elegibilidade CPC 48: documentação formal, relacionamento econômico, não dominância de risco de crédito, razão de hedge aceitável.</span></li>
+    </ul>
+    <div class="post-cta">CTA: "Você trabalha com hedge accounting? Qual tipo sua empresa usa mais?"</div>
+  </div>
+
+  <p style="color:var(--slate);font-size:13px">+ 7 posts adicionais prontos: VaR e CVaR · Put-Call Parity · ETTJ e taxas forward · FCFF vs. FCFE · Gamma de Opções · 3-Statement Model · Modigliani-Miller</p>
+</section>
+
+<!-- IDENTIDADE VISUAL -->
+<section id="identidade">
+  <div class="section-badge badge-design">Design</div>
+  <h2>Identidade Visual</h2>
+
+  <h3>Paleta de Cores</h3>
+  <div class="palette">
+    <div class="swatch" style="background:#0F1B2D;border:1px solid #2a3a50"><div class="swatch-name">Fundamento Navy</div><div class="swatch-hex">#0F1B2D</div></div>
+    <div class="swatch" style="background:#F4F4F0;color:#0F1B2D"><div class="swatch-name">Fundamento White</div><div class="swatch-hex">#F4F4F0</div></div>
+    <div class="swatch" style="background:#8B95A3"><div class="swatch-name">Fundamento Slate</div><div class="swatch-hex">#8B95A3</div></div>
+    <div class="swatch" style="background:#C8A96E"><div class="swatch-name">Fundamento Accent</div><div class="swatch-hex">#C8A96E</div></div>
+    <div class="swatch" style="background:#3D8B8B"><div class="swatch-name">Conta Certa Teal</div><div class="swatch-hex">#3D8B8B</div></div>
+    <div class="swatch" style="background:#2C5282"><div class="swatch-name">Nota Técnica Blue</div><div class="swatch-hex">#2C5282</div></div>
+    <div class="swatch" style="background:#63B3ED"><div class="swatch-name">NT Electric</div><div class="swatch-hex">#63B3ED</div></div>
+    <div class="swatch" style="background:#C85A3A"><div class="swatch-name">Alert</div><div class="swatch-hex">#C85A3A</div></div>
+  </div>
+
+  <h3>Tipografia</h3>
+  <table>
+    <tr><th>Elemento</th><th>Fonte</th><th>Peso</th><th>Tamanho</th></tr>
+    <tr><td>Título do carrossel</td><td>Inter</td><td>Bold 700</td><td>48-56pt</td></tr>
+    <tr><td>Subtítulo</td><td>Inter</td><td>SemiBold 600</td><td>28-32pt</td></tr>
+    <tr><td>Corpo do texto</td><td>Inter</td><td>Regular 400</td><td>18-22pt</td></tr>
+    <tr><td>Nota de rodapé</td><td>Inter</td><td>Light 300</td><td>12-14pt</td></tr>
+    <tr><td>Fórmula matemática</td><td>JetBrains Mono</td><td>Regular</td><td>20-24pt</td></tr>
+    <tr><td>Variável destacada</td><td>JetBrains Mono</td><td>Bold</td><td>20-24pt</td></tr>
+  </table>
+
+  <h3>Diferenciação Visual entre Perfis</h3>
+  <table>
+    <tr><th>Elemento</th><th>Conta Certa</th><th>Nota Técnica</th></tr>
+    <tr><td>Cor de acento</td><td style="color:var(--teal)">Teal #3D8B8B</td><td style="color:var(--electric)">Blue #2C5282</td></tr>
+    <tr><td>Densidade de texto</td><td>Menor (mais espaçamento)</td><td>Maior (mais informação por slide)</td></tr>
+    <tr><td>Uso de analogias visuais</td><td>Frequente</td><td>Raro</td></tr>
+    <tr><td>Uso de fórmulas</td><td>Simplificadas, com tradução</td><td>Completas, com derivação</td></tr>
+    <tr><td>Tom do título</td><td>Coloquial, pergunta ou afirmação</td><td>Técnico, descritivo</td></tr>
+    <tr><td>Gráficos</td><td>Minimalista, 1-2 variáveis</td><td>Técnico, múltiplas variáveis</td></tr>
+  </table>
+
+  <h3>Regras de Design</h3>
+  <div class="grid-2">
+    <div>
+      <h4>O que usar</h4>
+      <div class="card card-teal"><div class="card-body">Fundo Fundamento Navy (#0F1B2D) como padrão em ambos · Margem mínima 64px · Máximo 5 elementos por slide · Fonte mínima 18pt · Gráficos com rótulo direto</div></div>
+    </div>
+    <div>
+      <h4>O que nunca usar</h4>
+      <div class="card" style="border-left:3px solid var(--alert)"><div class="card-body">Ícones de cifrão, piggy bank, cofre ou moedas · Emojis em qualquer post do feed · Fundos com textura ou imagem de bolsa de valores · Gradientes muito saturados · Gráficos 3D</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<section id="workflow">
+  <div class="section-badge badge-op">Operação</div>
+  <h2>Workflow de Produção — 6 Etapas</h2>
+
+  <div class="grid-2">
+    <div class="card card-accent">
+      <div class="card-title">Etapa 1: Ideação e Seleção</div>
+      <div class="card-body">Frequência: semanal (segunda-feira). Input: calendário 30 dias, backlog, comentários de seguidores, novidades regulatórias. Saída: tema + série + formato + número de slides estimado.</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-title">Etapa 2: Pesquisa e Validação Técnica</div>
+      <div class="card-body">Verificar dados na fonte, confirmar legislação vigente, conferir fórmulas com referência primária, aprovar simplificações. Saída: dados com fonte, fórmulas confirmadas.</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-title">Etapa 3: Roteiro e Estrutura</div>
+      <div class="card-body">Roteiro slide a slide antes de abrir qualquer ferramenta de design. Formato fixo: título, série, perfil, formato, slides com texto exato e instrução visual.</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-title">Etapa 4: Design e Produção Visual</div>
+      <div class="card-body">Canva Pro ou Figma com template do ecossistema. Abrir template → duplicar → seguir roteiro. Não improvisar. Verificar tipografia, margem e legibilidade mobile.</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-title">Etapa 5: Revisão e Aprovação</div>
+      <div class="card-body">Nível 1: revisão técnica (números, fórmulas, exemplo numérico). Nível 2: revisão editorial (título, CTA, tom, compliance). Zero erros tolerados.</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-title">Etapa 6: Publicação e Monitoramento</div>
+      <div class="card-body">Horário: terça/quinta às 12h ou 18h (testar e ajustar). Monitorar 24h: responder comentários técnicos, não responder pedidos de recomendação personalizada.</div>
+    </div>
+  </div>
+
+  <h3>Cadência Operacional Semanal</h3>
+  <table>
+    <tr><th>Dia</th><th>Atividade</th></tr>
+    <tr><td>Segunda</td><td>Planejamento da semana. Seleção de temas. Revisão do backlog.</td></tr>
+    <tr><td>Terça</td><td>Pesquisa técnica e roteiro do post de quarta.</td></tr>
+    <tr><td>Quarta</td><td>Design e produção. Publicação.</td></tr>
+    <tr><td>Quinta</td><td>Pesquisa técnica e roteiro do post de sexta.</td></tr>
+    <tr><td>Sexta</td><td>Design e produção. Publicação (série recorrente preferencial).</td></tr>
+    <tr><td>Sábado</td><td>Publicação de série ou cheat sheet.</td></tr>
+    <tr><td>Domingo</td><td>Avaliação de métricas da semana. Atualização do backlog.</td></tr>
+  </table>
+</section>
+
+<!-- CRITÉRIOS DE QUALIDADE -->
+<section id="qualidade">
+  <div class="section-badge badge-op">Operação</div>
+  <h2>Critérios de Qualidade</h2>
+
+  <h3>Critérios de Bloqueio (obrigatórios — um "não" bloqueia a publicação)</h3>
+  <div class="criteria-grid">
+    <div class="criteria-item">
+      <div class="criteria-code">B1</div>
+      <div class="criteria-text">Dados numéricos verificados na fonte?</div>
+      <div class="criteria-desc">Todos os valores têm fonte identificada ou são explicitamente hipotéticos.</div>
+    </div>
+    <div class="criteria-item">
+      <div class="criteria-code">B2</div>
+      <div class="criteria-text">Fórmulas matematicamente corretas?</div>
+      <div class="criteria-desc">Conferidas com referência primária.</div>
+    </div>
+    <div class="criteria-item">
+      <div class="criteria-code">B3</div>
+      <div class="criteria-text">O post faz recomendação individualizada?</div>
+      <div class="criteria-desc">Não faz. O post é educacional.</div>
+    </div>
+    <div class="criteria-item">
+      <div class="criteria-code">B4</div>
+      <div class="criteria-text">O post promete retorno financeiro?</div>
+      <div class="criteria-desc">Não promete qualquer rentabilidade como certa.</div>
+    </div>
+    <div class="criteria-item">
+      <div class="criteria-code">B5</div>
+      <div class="criteria-text">Sugere compra ou venda de ativo específico?</div>
+      <div class="criteria-desc">Não sugere. Ativos usados como exemplos com contexto.</div>
+    </div>
+    <div class="criteria-item">
+      <div class="criteria-code">B8</div>
+      <div class="criteria-text">Tom evita linguagem de guru e promessa?</div>
+      <div class="criteria-desc">Ausência de "liberdade financeira", "fique rico", "renda passiva".</div>
+    </div>
+  </div>
+
+  <h3>Critérios de Excelência (E1-E15 — definem a diferença entre "aceitável" e "excelente")</h3>
+  <table>
+    <tr><th>#</th><th>Critério</th><th>Indicador</th></tr>
+    <tr><td>E1</td><td>O post ensina o mecanismo, não só o resultado?</td><td>O leitor entende por que, não só o quê</td></tr>
+    <tr><td>E2</td><td>O exemplo numérico usa valores reais e concretos?</td><td>Nunca "R$ X mil". Sempre valores específicos</td></tr>
+    <tr><td>E3</td><td>As limitações e premissas estão identificadas?</td><td>Honesto sobre o que simplifica</td></tr>
+    <tr><td>E4</td><td>O conteúdo é verificável pelo leitor?</td><td>O leitor pode reproduzir o cálculo</td></tr>
+    <tr><td>E5</td><td>O post adiciona algo não disponível acessível em outro lugar?</td><td>O conteúdo justifica sua existência</td></tr>
+    <tr><td>E6</td><td>O título é específico e verificável?</td><td>Evita "como investir melhor"</td></tr>
+    <tr><td>E7</td><td>Cada slide tem uma única ideia?</td><td>Sem slides com mais de 5 elementos de texto</td></tr>
+    <tr><td>E12</td><td>O post é legível em mobile sem zoom?</td><td>Testado em tela de 6 polegadas</td></tr>
+  </table>
+
+  <h3>Escala de Pontuação</h3>
+  <table>
+    <tr><th>Pontuação</th><th>Avaliação</th><th>Ação</th></tr>
+    <tr><td>0-7</td><td style="color:var(--alert)">Abaixo do padrão</td><td>Revisar antes de publicar</td></tr>
+    <tr><td>8-11</td><td style="color:var(--accent)">Adequado</td><td>Publicar. Registrar melhorias.</td></tr>
+    <tr><td>12-14</td><td style="color:var(--teal)">Bom</td><td>Publicar com confiança</td></tr>
+    <tr><td>15</td><td style="color:var(--electric)">Excelente</td><td>Candidato a post âncora ou série destacada</td></tr>
+  </table>
+</section>
+
+<!-- BACKLOG -->
+<section id="backlog">
+  <div class="section-badge badge-op">Operação</div>
+  <h2>Backlog de Conteúdo</h2>
+
+  <div class="dual-section">
+    <div class="dual-col-cc">
+      <div class="dual-label dual-label-cc">Conta Certa — Alta Prioridade</div>
+      <table>
+        <tr><th>Tema</th><th>Série</th><th>Status</th></tr>
+        <tr><td>IR simplificado vs. completo</td><td>Antes do IR</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>Carnê-leão para autônomos</td><td>Antes do IR</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>Previdência social vs. privada</td><td>Decisões Cotidiano</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>Score de crédito</td><td>Crédito</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>Histórico de inflação</td><td>Inflação</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>FII vs. imóvel físico</td><td>Primeiros Investimentos</td><td><span class="status status-ideia">Ideia</span></td></tr>
+      </table>
+    </div>
+    <div class="dual-col-nt">
+      <div class="dual-label dual-label-nt">Nota Técnica — Alta Prioridade</div>
+      <table>
+        <tr><th>Tema</th><th>Série</th><th>Status</th></tr>
+        <tr><td>Bootstrap completo</td><td>Bootstrap na Prática</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>GARCH e volatilidade</td><td>Estatística para Finanças</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>Lema de Itô</td><td>Mesa Quant</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>Risco de crédito</td><td>Risco em Camadas</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>CAPM: críticas</td><td>Controvérsia Técnica</td><td><span class="status status-ideia">Ideia</span></td></tr>
+        <tr><td>LBO: estrutura</td><td>Valuation de A a Z</td><td><span class="status status-ideia">Ideia</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h3>Ferramentas em Desenvolvimento — Fundamento Lab</h3>
+  <table>
+    <tr><th>Ferramenta</th><th>Descrição</th></tr>
+    <tr><td>Calculadora de juros compostos</td><td>Principal, taxa, prazo → montante e comparativo simples vs. composto</td></tr>
+    <tr><td>Simulador SAC vs. Price</td><td>Valor, taxa, prazo → tabela completa e comparativo de custo total</td></tr>
+    <tr><td>Calculadora de taxa real</td><td>Taxa nominal, inflação → taxa real (Fisher)</td></tr>
+    <tr><td>Calculadora de VaR paramétrico</td><td>Volatilidade, confiança, horizonte → VaR e CVaR estimado</td></tr>
+    <tr><td>Template DCF (planilha)</td><td>Modelo 3-demonstrações integradas com análise de sensibilidade</td></tr>
+    <tr><td>Calculadora de duration</td><td>Fluxos de caixa e taxa → Duration Macaulay, Modificada e Dólar</td></tr>
+    <tr><td>Bootstrap de curva</td><td>Vértices do mercado → curva zero-coupon completa</td></tr>
+  </table>
+</section>
+
+<hr class="divider">
+<section style="margin-bottom:80px;padding-top:0">
+  <div class="card card-accent" style="text-align:center;padding:32px">
+    <div style="font-size:20px;font-weight:700;color:var(--white);margin-bottom:8px">19 documentos prontos para execução</div>
+    <div style="font-size:14px;color:var(--slate)">Estratégia · Naming · Posicionamento · Compliance · 7+7 pilares · 20+20 séries · 2 calendários 30d · 10+10 posts prontos · Identidade visual · Templates · Workflow · Critérios de qualidade · Backlog</div>
+    <div style="margin-top:20px;font-size:12px;color:var(--slate)">Fundamento &nbsp;·&nbsp; Conta Certa &nbsp;·&nbsp; Nota Técnica &nbsp;·&nbsp; 2025</div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
