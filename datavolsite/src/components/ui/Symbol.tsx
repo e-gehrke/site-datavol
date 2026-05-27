@@ -4,7 +4,7 @@ interface SymbolProps {
   className?: string
 }
 
-const configs = {
+const configs: Record<string, { bg: string; arrow: string; radius: number; stroke?: string }> = {
   principal: { bg: '#3B5A67', arrow: '#F2EDE0', radius: 16 },
   azul:      { bg: '#3B5A67', arrow: '#F2EDE0', radius: 16 },
   dark:      { bg: '#111111', arrow: '#F2EDE0', radius: 16 },
