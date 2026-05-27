@@ -1,0 +1,2471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DATA.VOL — Curvas calculadas. Preços legíveis.</title>
+  <meta name="description" content="Infraestrutura de cálculo financeiro para tesouraria corporativa. Curvas de dólar forward, NDF, swaps e comparativos de preço bancário.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo+Black&family=Anton&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+
+// tweaks-panel.jsx
+// Reusable Tweaks shell + form-control helpers.
+//
+// Owns the host protocol (listens for __activate_edit_mode / __deactivate_edit_mode,
+// posts __edit_mode_available / __edit_mode_set_keys / __edit_mode_dismissed) so
+// individual prototypes don't re-roll it. Ships a consistent set of controls so you
+// don't hand-draw <input type="range">, segmented radios, steppers, etc.
+//
+// Usage (in an HTML file that loads React + Babel):
+//
+//   const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+//     "primaryColor": "#D97757",
+//     "palette": ["#D97757", "#29261b", "#f6f4ef"],
+//     "fontSize": 16,
+//     "density": "regular",
+//     "dark": false
+//   }/*EDITMODE-END*/;
+//
+//   function App() {
+//     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+//     return (
+//       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
+//         Hello
+//         <TweaksPanel>
+//           <TweakSection label="Typography" />
+//           <TweakSlider label="Font size" value={t.fontSize} min={10} max={32} unit="px"
+//                        onChange={(v) => setTweak('fontSize', v)} />
+//           <TweakRadio  label="Density" value={t.density}
+//                        options={['compact', 'regular', 'comfy']}
+//                        onChange={(v) => setTweak('density', v)} />
+//           <TweakSection label="Theme" />
+//           <TweakColor  label="Primary" value={t.primaryColor}
+//                        options={['#D97757', '#2A6FDB', '#1F8A5B', '#7A5AE0']}
+//                        onChange={(v) => setTweak('primaryColor', v)} />
+//           <TweakColor  label="Palette" value={t.palette}
+//                        options={[['#D97757', '#29261b', '#f6f4ef'],
+//                                  ['#475569', '#0f172a', '#f1f5f9']]}
+//                        onChange={(v) => setTweak('palette', v)} />
+//           <TweakToggle label="Dark mode" value={t.dark}
+//                        onChange={(v) => setTweak('dark', v)} />
+//         </TweaksPanel>
+//       </div>
+//     );
+//   }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    transform:scale(var(--dc-inv-zoom,1));transform-origin:bottom right;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+
+  .twk-field{appearance:none;box-sizing:border-box;width:100%;min-width:0;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;
+    overflow-wrap:anywhere}
+
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+
+  .twk-num{display:flex;align-items:center;box-sizing:border-box;min-width:0;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;
+    user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{
+    -webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+
+  .twk-chips{display:flex;gap:6px}
+  .twk-chip{position:relative;appearance:none;flex:1;min-width:0;height:46px;
+    padding:0;border:0;border-radius:6px;overflow:hidden;cursor:default;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06);
+    transition:transform .12s cubic-bezier(.3,.7,.4,1),box-shadow .12s}
+  .twk-chip:hover{transform:translateY(-1px);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.12)}
+  .twk-chip[data-on="1"]{box-shadow:0 0 0 1.5px rgba(0,0,0,.85),
+    0 2px 6px rgba(0,0,0,.15)}
+  .twk-chip>span{position:absolute;top:0;bottom:0;right:0;width:34%;
+    display:flex;flex-direction:column;box-shadow:-1px 0 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i{flex:1;box-shadow:0 -1px 0 rgba(0,0,0,.1)}
+  .twk-chip>span>i:first-child{box-shadow:none}
+  .twk-chip svg{position:absolute;top:6px;left:6px;width:13px;height:13px;
+    filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+`;
+
+// ── useTweaks ───────────────────────────────────────────────────────────────
+// Single source of truth for tweak values. setTweak persists via the host
+// (__edit_mode_set_keys → host rewrites the EDITMODE block on disk).
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  // Accepts either setTweak('key', value) or setTweak({ key: value, ... }) so a
+  // useState-style call doesn't write a "[object Object]" key into the persisted
+  // JSON block.
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null
+      ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+    // Same-window signal so in-page listeners (deck-stage rail thumbnails)
+    // can react — the parent message only reaches the host, not peers.
+    window.dispatchEvent(new CustomEvent('tweakchange', { detail: edits }));
+  }, []);
+  return [values, setTweak];
+}
+
+// ── TweaksPanel ─────────────────────────────────────────────────────────────
+// Floating shell. Registers the protocol listener BEFORE announcing
+// availability — if the announce ran first, the host's activate could land
+// before our handler exists and the toolbar toggle would silently no-op.
+// The close button posts __edit_mode_dismissed so the host's toolbar toggle
+// flips off in lockstep; the host echoes __deactivate_edit_mode back which
+// is what actually hides the panel.
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = {
+      x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)),
+      y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)),
+    };
+    panel.style.right = offsetRef.current.x + 'px';
+    panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+
+  React.useEffect(() => {
+    if (!open) return;
+    clampToViewport();
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', clampToViewport);
+      return () => window.removeEventListener('resize', clampToViewport);
+    }
+    const ro = new ResizeObserver(clampToViewport);
+    ro.observe(document.documentElement);
+    return () => ro.disconnect();
+  }, [open, clampToViewport]);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const t = e?.data?.type;
+      if (t === '__activate_edit_mode') setOpen(true);
+      else if (t === '__deactivate_edit_mode') setOpen(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const dismiss = () => {
+    setOpen(false);
+    window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+  };
+
+  const onDragStart = (e) => {
+    const panel = dragRef.current;
+    if (!panel) return;
+    const r = panel.getBoundingClientRect();
+    const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right;
+    const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => {
+      offsetRef.current = {
+        x: startRight - (ev.clientX - sx),
+        y: startBottom - (ev.clientY - sy),
+      };
+      clampToViewport();
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  };
+
+  if (!open) return null;
+  return (
+    <>
+      <style>{__TWEAKS_STYLE}</style>
+      <div ref={dragRef} className="twk-panel" data-omelette-chrome=""
+           style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}>
+        <div className="twk-hd" onMouseDown={onDragStart}>
+          <b>{title}</b>
+          <button className="twk-x" aria-label="Close tweaks"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={dismiss}>✕</button>
+        </div>
+        <div className="twk-body">
+          {children}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Layout helpers ──────────────────────────────────────────────────────────
+
+function TweakSection({ label, children }) {
+  return (
+    <>
+      <div className="twk-sect">{label}</div>
+      {children}
+    </>
+  );
+}
+
+function TweakRow({ label, value, children, inline = false }) {
+  return (
+    <div className={inline ? 'twk-row twk-row-h' : 'twk-row'}>
+      <div className="twk-lbl">
+        <span>{label}</span>
+        {value != null && <span className="twk-val">{value}</span>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ── Controls ────────────────────────────────────────────────────────────────
+
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (
+    <TweakRow label={label} value={`${value}${unit}`}>
+      <input type="range" className="twk-slider" min={min} max={max} step={step}
+             value={value} onChange={(e) => onChange(Number(e.target.value))} />
+    </TweakRow>
+  );
+}
+
+function TweakToggle({ label, value, onChange }) {
+  return (
+    <div className="twk-row twk-row-h">
+      <div className="twk-lbl"><span>{label}</span></div>
+      <button type="button" className="twk-toggle" data-on={value ? '1' : '0'}
+              role="switch" aria-checked={!!value}
+              onClick={() => onChange(!value)}><i /></button>
+    </div>
+  );
+}
+
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null);
+  const [dragging, setDragging] = React.useState(false);
+  // The active value is read by pointer-move handlers attached for the lifetime
+  // of a drag — ref it so a stale closure doesn't fire onChange for every move.
+  const valueRef = React.useRef(value);
+  valueRef.current = value;
+
+  // Segments wrap mid-word once per-segment width runs out. The track is
+  // ~248px (280 panel − 28 body pad − 4 seg pad), each button loses 12px
+  // to its own padding, and 11.5px system-ui averages ~6.3px/char — so 2
+  // options fit ~16 chars each, 3 fit ~10. Past that (or >3 options), fall
+  // back to a dropdown rather than wrap.
+  const labelLen = (o) => String(typeof o === 'object' ? o.label : o).length;
+  const maxLen = options.reduce((m, o) => Math.max(m, labelLen(o)), 0);
+  const fitsAsSegments = maxLen <= ({ 2: 16, 3: 10 }[options.length] ?? 0);
+  if (!fitsAsSegments) {
+    // <select> emits strings — map back to the original option value so the
+    // fallback stays type-preserving (numbers, booleans) like the segment path.
+    const resolve = (s) => {
+      const m = options.find((o) => String(typeof o === 'object' ? o.value : o) === s);
+      return m === undefined ? s : typeof m === 'object' ? m.value : m;
+    };
+    return <TweakSelect label={label} value={value} options={options}
+                        onChange={(s) => onChange(resolve(s))} />;
+  }
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value));
+  const n = opts.length;
+
+  const segAt = (clientX) => {
+    const r = trackRef.current.getBoundingClientRect();
+    const inner = r.width - 4;
+    const i = Math.floor(((clientX - r.left - 2) / inner) * n);
+    return opts[Math.max(0, Math.min(n - 1, i))].value;
+  };
+
+  const onPointerDown = (e) => {
+    setDragging(true);
+    const v0 = segAt(e.clientX);
+    if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => {
+      if (!trackRef.current) return;
+      const v = segAt(ev.clientX);
+      if (v !== valueRef.current) onChange(v);
+    };
+    const up = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  return (
+    <TweakRow label={label}>
+      <div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown}
+           className={dragging ? 'twk-seg dragging' : 'twk-seg'}>
+        <div className="twk-seg-thumb"
+             style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`,
+                      width: `calc((100% - 4px) / ${n})` }} />
+        {opts.map((o) => (
+          <button key={o.value} type="button" role="radio" aria-checked={o.value === value}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakSelect({ label, value, options, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => {
+          const v = typeof o === 'object' ? o.value : o;
+          const l = typeof o === 'object' ? o.label : o;
+          return <option key={v} value={v}>{l}</option>;
+        })}
+      </select>
+    </TweakRow>
+  );
+}
+
+function TweakText({ label, value, placeholder, onChange }) {
+  return (
+    <TweakRow label={label}>
+      <input className="twk-field" type="text" value={value} placeholder={placeholder}
+             onChange={(e) => onChange(e.target.value)} />
+    </TweakRow>
+  );
+}
+
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => {
+    if (min != null && n < min) return min;
+    if (max != null && n > max) return max;
+    return n;
+  };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault();
+    startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => {
+      const dx = ev.clientX - startRef.current.x;
+      const raw = startRef.current.val + dx * step;
+      const snapped = Math.round(raw / step) * step;
+      onChange(clamp(Number(snapped.toFixed(decimals))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+  return (
+    <div className="twk-num">
+      <span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span>
+      <input type="number" value={value} min={min} max={max} step={step}
+             onChange={(e) => onChange(clamp(Number(e.target.value)))} />
+      {unit && <span className="twk-num-unit">{unit}</span>}
+    </div>
+  );
+}
+
+// Relative-luminance contrast pick — checkmarks drawn over a swatch need to
+// read on both #111 and #fafafa without per-option configuration. Hex input
+// only (#rgb / #rrggbb); named or rgb()/hsl() colors fall through to "light".
+function __twkIsLight(hex) {
+  const h = String(hex).replace('#', '');
+  const x = h.length === 3 ? h.replace(/./g, (c) => c + c) : h.padEnd(6, '0');
+  const n = parseInt(x.slice(0, 6), 16);
+  if (Number.isNaN(n)) return true;
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return r * 299 + g * 587 + b * 114 > 148000;
+}
+
+const __TwkCheck = ({ light }) => (
+  <svg viewBox="0 0 14 14" aria-hidden="true">
+    <path d="M3 7.2 5.8 10 11 4.2" fill="none" strokeWidth="2.2"
+          strokeLinecap="round" strokeLinejoin="round"
+          stroke={light ? 'rgba(0,0,0,.78)' : '#fff'} />
+  </svg>
+);
+
+// TweakColor — curated color/palette picker. Each option is either a single
+// hex string or an array of 1-5 hex strings; the card adapts — a lone color
+// renders solid, a palette renders colors[0] as the hero (left ~2/3) with the
+// rest stacked in a sharp column on the right. onChange emits the
+// option in the shape it was passed (string stays string, array stays array).
+// Without options it falls back to the native color input for back-compat.
+function TweakColor({ label, value, options, onChange }) {
+  if (!options || !options.length) {
+    return (
+      <div className="twk-row twk-row-h">
+        <div className="twk-lbl"><span>{label}</span></div>
+        <input type="color" className="twk-swatch" value={value}
+               onChange={(e) => onChange(e.target.value)} />
+      </div>
+    );
+  }
+  // Native <input type=color> emits lowercase hex per the HTML spec, so
+  // compare case-insensitively. String() guards JSON.stringify(undefined),
+  // which returns the primitive undefined (no .toLowerCase).
+  const key = (o) => String(JSON.stringify(o)).toLowerCase();
+  const cur = key(value);
+  return (
+    <TweakRow label={label}>
+      <div className="twk-chips" role="radiogroup">
+        {options.map((o, i) => {
+          const colors = Array.isArray(o) ? o : [o];
+          const [hero, ...rest] = colors;
+          const sup = rest.slice(0, 4);
+          const on = key(o) === cur;
+          return (
+            <button key={i} type="button" className="twk-chip" role="radio"
+                    aria-checked={on} data-on={on ? '1' : '0'}
+                    aria-label={colors.join(', ')} title={colors.join(' · ')}
+                    style={{ background: hero }}
+                    onClick={() => onChange(o)}>
+              {sup.length > 0 && (
+                <span>
+                  {sup.map((c, j) => <i key={j} style={{ background: c }} />)}
+                </span>
+              )}
+              {on && <__TwkCheck light={__twkIsLight(hero)} />}
+            </button>
+          );
+        })}
+      </div>
+    </TweakRow>
+  );
+}
+
+function TweakButton({ label, onClick, secondary = false }) {
+  return (
+    <button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'}
+            onClick={onClick}>{label}</button>
+  );
+}
+
+Object.assign(window, {
+  useTweaks, TweaksPanel, TweakSection, TweakRow,
+  TweakSlider, TweakToggle, TweakRadio, TweakSelect,
+  TweakText, TweakNumber, TweakColor, TweakButton,
+});
+
+
+/* DATA.VOL Symbol component (do brandbook, exato) */
+
+const { useState, useEffect, useRef, useMemo } = React;
+
+const Symbol = ({ variant = 'principal', size = 40, raw = false }) => {
+  const configs = {
+    principal: { bg: '#3B5A67', arrow: '#F2EDE0', radius: 16 },
+    azul:      { bg: '#3B5A67', arrow: '#F2EDE0', radius: 16 },
+    dark:      { bg: '#111111', arrow: '#F2EDE0', radius: 16 },
+    lime:      { bg: '#111111', arrow: '#C6FF4D', radius: 16 },
+    light:     { bg: '#F2EDE0', arrow: '#111111', radius: 16 },
+    favicon:   { bg: '#111111', arrow: '#F2EDE0', radius: 50 },
+    outline:   { bg: 'transparent', arrow: '#3B5A67', stroke: '#3B5A67', radius: 16 },
+    raw:       { bg: 'transparent', arrow: '#F2EDE0', radius: 0 },
+  };
+  const c = configs[raw ? 'raw' : variant];
+  const useTexture = size >= 48;
+  const fid = 'sg-' + Math.abs(Math.round(size * 7919 + (variant.charCodeAt(0) || 0))).toString(36);
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} aria-label="DATA.VOL" role="img" style={{ display: 'block' }}>
+      {useTexture && (
+        <defs>
+          <filter id={fid} x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="7" />
+            <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.1 1.15" />
+            <feComposite in="SourceGraphic" in2="result" operator="in" />
+          </filter>
+        </defs>
+      )}
+      {!raw && (variant === 'outline' ? (
+        <rect x="6" y="6" width="88" height="88" rx={c.radius} fill="none" stroke={c.stroke} strokeWidth="4" />
+      ) : (
+        <rect x="5" y="5" width="90" height="90" rx={c.radius} fill={c.bg} />
+      ))}
+      <g filter={useTexture ? `url(#${fid})` : undefined}>
+        {/* L-stub + V + diagonal to arrow tip closer to brandbook proportions */}
+        <path d="M12 50 L36 50 L56 84 L82 22" stroke={c.arrow} strokeWidth="14" strokeLinejoin="miter" strokeLinecap="butt" fill="none" />
+        {/* Bold arrowhead pointing up-right */}
+        <polygon points="94,8 70,16 84,32" fill={c.arrow} />
+      </g>
+    </svg>
+  );
+};
+
+const Lockup = ({ size = 30, fontSize = 26, dot = 'lime' }) => (
+  <a href="#/" className="lockup">
+    <Symbol variant={dot === 'lime' ? 'lime' : 'principal'} size={size} />
+    <span className="word" style={{ fontSize }}>
+      DATA<span className="dot" style={{ color: dot === 'lime' ? 'var(--lime)' : 'var(--azul)' }}>.</span>VOL
+    </span>
+  </a>
+);
+
+/* ─── Hash router ─── */
+const useRoute = () => {
+  const getRoute = () => window.location.hash.replace(/^#/, '') || '/';
+  const [route, setRoute] = useState(getRoute());
+  useEffect(() => {
+    const onHash = () => {
+      setRoute(getRoute());
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  const navigate = (to) => { window.location.hash = to; };
+  return { route, navigate };
+};
+
+/* ─── Live ticker fake live FX data ─── */
+const useTicker = () => {
+  const base = useMemo(() => ([
+    { sym: 'USD/BRL',  v: 5.182, d: 0.34 },
+    { sym: 'EUR/BRL',  v: 5.612, d: -0.12 },
+    { sym: 'DI 1Y',    v: 11.18, d: 0.04, suffix: '%' },
+    { sym: 'DI 3Y',    v: 12.42, d: -0.02, suffix: '%' },
+    { sym: 'CDI',      v: 10.40, d: 0, suffix: '%' },
+    { sym: 'DOL JUN26',v: 5.215, d: 0.28 },
+    { sym: 'DOL SET26',v: 5.273, d: 0.41 },
+    { sym: 'DOL DEZ26',v: 5.362, d: 0.52 },
+    { sym: 'DOL JUN27',v: 5.518, d: 0.71 },
+    { sym: 'DDI JUL26',v: 6.85,  d: 0.08, suffix: '%' },
+    { sym: 'IBOV',     v: 142385, d: 0.62, suffix: '' },
+    { sym: 'EWZ',      v: 28.42, d: 0.18 },
+  ]), []);
+  return base;
+};
+
+/* ─── Forward curve data (mock, realistic) ─── */
+const FORWARD_DATA = [
+  { vert: 'SPOT',   m: 0,    ref: 5.182, bank: 5.182, du: 0 },
+  { vert: '1M',     m: 1,    ref: 5.215, bank: 5.226, du: 21 },
+  { vert: '3M',     m: 3,    ref: 5.273, bank: 5.291, du: 63 },
+  { vert: '6M',     m: 6,    ref: 5.362, bank: 5.388, du: 126 },
+  { vert: '9M',     m: 9,    ref: 5.448, bank: 5.485, du: 189 },
+  { vert: '12M',    m: 12,   ref: 5.518, bank: 5.560, du: 252 },
+  { vert: '18M',    m: 18,   ref: 5.658, bank: 5.715, du: 378 },
+  { vert: '24M',    m: 24,   ref: 5.793, bank: 5.870, du: 504 },
+  { vert: '36M',    m: 36,   ref: 6.094, bank: 6.215, du: 756 },
+];
+
+/* ─── App navigation map ─── */
+const APP_NAV = [
+  { group: 'Painel', items: [
+    { route: '/dashboard',   label: 'Dashboard',           hint: 'Overview',         live: true },
+  ] },
+  { group: 'Curvas', items: [
+    { route: '/curva',       label: 'Dólar forward',       hint: 'USD/BRL',          live: true },
+    { route: '/juros',       label: 'Curva de juros',      hint: 'DI · pré',         beta: true },
+  ] },
+  { group: 'Instrumentos', items: [
+    { route: '/ndf',         label: 'NDF',                 hint: 'Non-deliverable',  soon: true },
+    { route: '/swaps',       label: 'Swaps',               hint: 'DI × Pré · USD',   soon: true },
+    { route: '/comparador',  label: 'Comparador',          hint: 'Banco × ref.',     beta: true },
+  ] },
+  { group: 'Suporte', items: [
+    { route: '/biblioteca',  label: 'Biblioteca',          hint: 'Glossário curto',  live: true },
+    { route: '/historico',   label: 'Histórico',           hint: 'Consultas',        live: true },
+  ] },
+  { group: 'Conta', items: [
+    { route: '/assinatura',  label: 'Assinatura',          hint: 'Plano · fatura',   live: true },
+    { route: '/admin',       label: 'Admin',               hint: 'Membros',          live: true },
+  ] },
+];
+
+/* ─── Login modal ─── */
+const LoginModal = ({ onClose, navigate }) => {
+  const [email, setEmail] = useState('');
+  const [pwd, setPwd] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prevOv = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOv;
+    };
+  }, [onClose]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    setTimeout(() => {
+      if (email === 'admin@datavol.com' && pwd === 'admin') {
+        onClose();
+        navigate('/admin');
+      } else if (email && pwd.length >= 3) {
+        onClose();
+        navigate('/dashboard');
+      } else {
+        setError('Credenciais inválidas.');
+      }
+      setLoading(false);
+    }, 450);
+  };
+
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', maxWidth: 820 }}>
+        {/* Left visual */}
+        <div style={{
+          background: 'var(--black)',
+          color: 'var(--off)',
+          padding: '36px 32px',
+          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+          minHeight: 420,
+          backgroundImage:
+            'linear-gradient(rgba(166,166,166,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(166,166,166,.06) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }}>
+          <p className="label" style={{ color: 'var(--cinza)' }}>Acesso restrito</p>
+          <div>
+            <Symbol variant="lime" size={72} />
+            <h2 className="display-md" style={{ marginTop: 22, maxWidth: '14ch' }}>
+              O usuário<br/>entende o preço.
+            </h2>
+            <p style={{ fontSize: 13, color: 'var(--cinza)', lineHeight: 1.55, marginTop: 12, maxWidth: '34ch' }}>
+              Acesso por assinatura. Cálculo de curvas, comparativos e leitura de preço para tesouraria.
+            </p>
+          </div>
+          <p className="label-sm" style={{ color: 'var(--cinza-3)' }}>volatis.com.br</p>
+        </div>
+
+        {/* Right form */}
+        <div style={{ background: 'var(--off)', padding: '40px 36px', display: 'flex', alignItems: 'center', position: 'relative' }}>
+          <button onClick={onClose} aria-label="Fechar" style={{
+            position: 'absolute', top: 14, right: 14,
+            width: 32, height: 32, borderRadius: 3,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--grafite)',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16">
+              <path d="M3 3 L13 13 M13 3 L3 13" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
+          </button>
+          <div style={{ width: '100%', maxWidth: 320 }}>
+            <p className="label" style={{ color: 'var(--azul)', marginBottom: 8 }}>Entrar</p>
+            <h1 className="display-sm" style={{ marginBottom: 6, fontSize: 36 }}>Acesso por convite.</h1>
+            <p style={{ fontSize: 13, color: 'var(--cinza-3)', marginBottom: 24, lineHeight: 1.55 }}>
+              DATA.VOL não possui cadastro aberto.
+            </p>
+            <form onSubmit={submit}>
+              <div style={{ marginBottom: 16 }}>
+                <label className="label-input">Email</label>
+                <input type="email" required value={email} autoFocus onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" className="input" />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label className="label-input">Senha</label>
+                <input type="password" required value={pwd} onChange={e => setPwd(e.target.value)} placeholder="••••••••" className="input" />
+              </div>
+              {error && <p style={{ fontFamily: 'var(--mono)', fontSize: 11, color: '#b04848', marginBottom: 12, letterSpacing: 1 }}>⚠ {error}</p>}
+              <button type="submit" disabled={loading} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '13px 20px', opacity: loading ? .6 : 1 }}>
+                {loading ? 'Validando…' : 'Entrar →'}
+              </button>
+            </form>
+            <div style={{ marginTop: 20, paddingTop: 14, borderTop: '1px solid var(--rule)' }}>
+              <p className="label-sm" style={{ color: 'var(--cinza-3)', marginBottom: 6 }}>Demo</p>
+              <p className="mono" style={{ fontSize: 11, color: 'var(--cinza-3)', lineHeight: 1.7 }}>
+                admin@datavol.com / admin → admin<br/>
+                qualquer@email.com / 123 → dashboard
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <style>{`@media (max-width: 720px) { .modal { grid-template-columns: 1fr !important; } }`}</style>
+    </div>
+  );
+};
+
+Object.assign(window, { Symbol, Lockup, useRoute, useTicker, FORWARD_DATA, APP_NAV, LoginModal });
+
+
+/* DATA.VOL Public landing page */
+
+const PublicHeader = ({ openLogin }) => (
+  <header className="pub-header">
+    <div className="wrap-wide">
+      <div className="header-inner">
+        <window.Lockup size={32} fontSize={26} dot="lime" />
+        <nav>
+          <ul className="pub-nav">
+            <li><a href="#produto">Produto</a></li>
+            <li><a href="#cobertura">Cobertura</a></li>
+            <li><a href="#para-quem">Para quem</a></li>
+            <li><a href="#assinatura">Assinatura</a></li>
+          </ul>
+        </nav>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <a href="#/dashboard" className="btn btn-quiet btn-sm" style={{ color: 'var(--cinza)', borderColor: 'var(--rule-dark-strong)' }}>Acesso demo →</a>
+          <button onClick={openLogin} className="btn btn-lime btn-sm">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+);
+
+/* ─── Compact forward curve preview chart for hero ─── */
+const HeroChart = () => {
+  const W = 640, H = 280;
+  const PAD = { l: 60, r: 24, t: 28, b: 38 };
+  const innerW = W - PAD.l - PAD.r;
+  const innerH = H - PAD.t - PAD.b;
+
+  const data = window.FORWARD_DATA;
+  const xMax = 36;
+  const yMin = 5.10, yMax = 6.30;
+  const xs = (m) => PAD.l + (m / xMax) * innerW;
+  const ys = (v) => PAD.t + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+
+  const refPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xs(d.m).toFixed(1)} ${ys(d.ref).toFixed(1)}`).join(' ');
+  const bankPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xs(d.m).toFixed(1)} ${ys(d.bank).toFixed(1)}`).join(' ');
+
+  const yTicks = [5.2, 5.5, 5.8, 6.1];
+  const xTicks = [0, 6, 12, 24, 36];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+      {/* gridlines */}
+      {yTicks.map(t => (
+        <line key={'y'+t} x1={PAD.l} y1={ys(t)} x2={W - PAD.r} y2={ys(t)} stroke="rgba(166,166,166,.12)" strokeDasharray="2 4" />
+      ))}
+      {xTicks.map(t => (
+        <line key={'x'+t} x1={xs(t)} y1={PAD.t} x2={xs(t)} y2={H - PAD.b} stroke="rgba(166,166,166,.08)" />
+      ))}
+      {/* axes */}
+      <line x1={PAD.l} y1={H - PAD.b} x2={W - PAD.r} y2={H - PAD.b} stroke="rgba(166,166,166,.4)" />
+      <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={H - PAD.b} stroke="rgba(166,166,166,.4)" />
+      {/* y labels */}
+      {yTicks.map(t => (
+        <text key={'yl'+t} x={PAD.l - 10} y={ys(t)+3} textAnchor="end" fill="#A6A6A6" fontFamily="IBM Plex Mono" fontSize="10">{t.toFixed(2)}</text>
+      ))}
+      {/* x labels */}
+      {xTicks.map(t => (
+        <text key={'xl'+t} x={xs(t)} y={H - PAD.b + 16} textAnchor="middle" fill="#A6A6A6" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="1">
+          {t === 0 ? 'SPOT' : t + 'M'}
+        </text>
+      ))}
+      {/* bank curve (dashed) */}
+      <path d={bankPath} fill="none" stroke="#A6A6A6" strokeWidth="1.4" strokeDasharray="4 3" />
+      {/* ref curve (lime) */}
+      <path d={refPath} fill="none" stroke="#C6FF4D" strokeWidth="2" />
+      {/* ref points */}
+      {data.map(d => (
+        <circle key={d.vert} cx={xs(d.m)} cy={ys(d.ref)} r="3" fill="#C6FF4D" />
+      ))}
+      {/* spread annotation at 12M */}
+      <g>
+        <line x1={xs(12)} y1={ys(5.518)} x2={xs(12)} y2={ys(5.560)} stroke="#ff6b6b" strokeWidth="1" />
+        <rect x={xs(12) + 8} y={ys(5.54) - 8} width="58" height="16" fill="#080A0B" stroke="rgba(166,166,166,.3)" />
+        <text x={xs(12) + 12} y={ys(5.54)+3} fill="#ff6b6b" fontFamily="IBM Plex Mono" fontSize="9" letterSpacing="1">SPREAD 76bps</text>
+      </g>
+      {/* labels */}
+      <text x={PAD.l} y={20} fill="#F2EDE0" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="2">USD/BRL · FORWARD CURVE · 25 MAI 2026</text>
+    </svg>
+  );
+};
+
+const PublicLanding = ({ openLogin }) => {
+  const ticker = window.useTicker();
+  const tickerItems = [...ticker, ...ticker]; // duplicate for infinite ticker
+
+  return (
+    <div style={{ background: 'var(--black)', color: 'var(--off)', minHeight: '100vh' }}>
+      {/* Pre-hero ticker sample of what members see */}
+      <div className="ticker-bar" style={{ borderTop: 'none', position: 'relative' }}>
+        <div className="ticker-track">
+          {tickerItems.map((t, i) => (
+            <span key={i} className="ticker-item">
+              <span className="symbol-label">{t.sym}</span>
+              <span className="value">{t.v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}{t.suffix || ''}</span>
+              {t.d !== 0 && (
+                <span className={'delta ' + (t.d > 0 ? 'up' : 'down')}>
+                  {t.d > 0 ? '+' : ''}{t.d.toFixed(2)}%
+                </span>
+              )}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* HERO */}
+      <section style={{ padding: '70px 0 60px', borderBottom: '1px solid var(--rule-dark)' }}>
+        <div className="wrap-wide">
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.05fr) minmax(0, 1fr)', gap: 56, alignItems: 'center' }} className="hero-grid">
+            <div>
+              <p className="label" style={{ color: 'var(--lime)', marginBottom: 22 }}>Infraestrutura de cálculo · Tesouraria corporativa</p>
+              <h1 className="display-lg" style={{ color: 'var(--off)', maxWidth: '14ch', textTransform: 'uppercase' }}>
+                O banco oferece o preço.<br/>
+                <span style={{ color: 'var(--lime)' }}>DATA.VOL</span> mostra o cálculo.
+              </h1>
+              <p className="lead" style={{ color: 'var(--cinza)', marginTop: 24, maxWidth: '48ch' }}>
+                Curvas calculadas, preços legíveis e decisões menos assimétricas para empresas que lidam com câmbio, NDF, swaps e exposição em dólar sem depender da precificação unilateral do banco.
+              </p>
+              <p style={{
+                fontFamily: 'var(--display)', fontSize: 'clamp(20px, 2vw, 28px)',
+                lineHeight: 1.05, letterSpacing: '.5px',
+                color: 'var(--lime)', marginTop: 22, maxWidth: '36ch',
+                paddingTop: 22, borderTop: '1px solid rgba(198, 255, 77, .25)',
+              }}>
+                O usuário entende o preço e decide com mais critério.
+              </p>
+              <div style={{ display: 'flex', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
+                <button onClick={openLogin} className="btn btn-lime">Entrar →</button>
+                <a href="#/dashboard" className="btn btn-ghost on-dark">Ver demo</a>
+                <a href="#assinatura" className="btn btn-quiet" style={{ color: 'var(--cinza)' }}>Solicitar acesso</a>
+              </div>
+            </div>
+
+            {/* Live tool preview */}
+            <div className="panel" style={{ padding: 0, background: 'var(--black-2)', border: '1px solid var(--rule-dark-strong)' }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 16px',
+                borderBottom: '1px solid var(--rule-dark)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--lime)' }}></span>
+                  <span className="label-sm" style={{ color: 'var(--off)' }}>Curva dólar forward · ao vivo</span>
+                </div>
+                <span className="label-sm" style={{ color: 'var(--cinza)' }}>USD/BRL · ref 25 mai 2026</span>
+              </div>
+              <div style={{ padding: 8 }}>
+                <HeroChart />
+              </div>
+              <div style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+                borderTop: '1px solid var(--rule-dark)',
+              }}>
+                {[
+                  { l: 'Spot', v: '5,182', d: '+0,34%', up: true },
+                  { l: 'DV ref 12M', v: '5,518', d: 'carrego 6,49% a.a.', up: false, dim: true },
+                  { l: 'Banco 12M', v: '5,560', d: '+76 bps', up: false },
+                ].map((kpi, i) => (
+                  <div key={i} style={{
+                    padding: '14px 16px',
+                    borderRight: i < 2 ? '1px solid var(--rule-dark)' : 'none',
+                  }}>
+                    <p className="label-sm" style={{ color: 'var(--cinza-3)', marginBottom: 6 }}>{kpi.l}</p>
+                    <p className="mono" style={{ fontSize: 22, lineHeight: 1, color: 'var(--off)', marginBottom: 4 }}>{kpi.v}</p>
+                    <p className="mono" style={{ fontSize: 10, letterSpacing: 1, color: kpi.dim ? 'var(--cinza)' : kpi.up ? 'var(--up)' : 'var(--down)' }}>
+                      {kpi.d}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+        <style>{`@media (max-width: 980px) { .hero-grid { grid-template-columns: 1fr !important; gap: 36px !important; } }`}</style>
+      </section>
+
+      {/* MANIFESTO PUNCH */}
+      <section style={{ padding: '80px 0', background: 'var(--off)', color: 'var(--grafite)' }} id="produto">
+        <div className="wrap-wide">
+          <div className="seclabel">Proposta</div>
+          <h2 className="display-lg" style={{ maxWidth: '18ch' }}>
+            Pequenas empresas não precisam aceitar preços financeiros como <span style={{ background: 'var(--lime)', padding: '0 6px' }}>caixas-pretas.</span>
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40, marginTop: 48 }}>
+            <p className="lead" style={{ color: 'var(--cinza-3)' }}>
+              Existem empresas que lidam com dólar, fluxo internacional e risco cambial relevante, mas não possuem tesouraria estruturada, orçamento para terminais Bloomberg, nem equipe capaz de construir modelos confiáveis em Excel.
+            </p>
+            <p className="lead" style={{ color: 'var(--cinza-3)' }}>
+              Essas empresas acabam aceitando preços de dealers sem conseguir decompor curva, spread, premissa ou custo implícito. <strong style={{ color: 'var(--grafite)' }}>DATA.VOL existe para reduzir essa assimetria.</strong>
+            </p>
+            <p className="lead" style={{ color: 'var(--cinza-3)' }}>
+              A complexidade fica no motor. A clareza fica na interface.
+            </p>
+          </div>
+
+          {/* Manifesto punchline */}
+          <div style={{
+            marginTop: 60,
+            paddingTop: 36,
+            borderTop: '1px solid rgba(0,0,0,.12)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
+            gap: 32, flexWrap: 'wrap',
+          }}>
+            <p style={{
+              fontFamily: 'var(--display)',
+              fontSize: 'clamp(28px, 3.6vw, 48px)',
+              lineHeight: 1.04, letterSpacing: '.5px',
+              maxWidth: '22ch',
+            }}>
+              O usuário entende o preço e <span style={{ background: 'var(--lime)', padding: '0 6px' }}>decide com mais critério.</span>
+            </p>
+            <p className="label" style={{ color: 'var(--cinza-3)' }}>Essência DATA.VOL</p>
+          </div>
+        </div>
+      </section>
+
+      {/* COBERTURA */}
+      <section style={{ padding: '80px 0', borderTop: '1px solid var(--rule-dark)' }} id="cobertura">
+        <div className="wrap-wide">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 36 }}>
+            <div>
+              <div className="seclabel lime">Cobertura</div>
+              <h2 className="display-md" style={{ color: 'var(--off)', maxWidth: '20ch' }}>
+                Uma assinatura.<br/>Todos os instrumentos.
+              </h2>
+            </div>
+            <p className="lead-sm" style={{ color: 'var(--cinza)', maxWidth: '40ch' }}>
+              Sem trilhas BASIC/PRO. Sem aulas. Sem conteúdo. Ferramenta operacional, atualizada com dados de mercado.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+            {[
+              { tit: 'Curva dólar forward', sub: 'USD/BRL · vértices até 36M', s: 'live', d: 'Curva calculada a partir de DI futuro × taxa internacional. Comparativo direto com cotação bancária.' },
+              { tit: 'Curvas de juros',     sub: 'DI · Pré · Cupom',           s: 'beta', d: 'Vertices DI futuro, estrutura a termo e leitura do mercado de taxa.' },
+              { tit: 'Comparador',          sub: 'Banco × referência',         s: 'beta', d: 'Cole a cotação que o banco enviou. Veja o spread, custo embutido e referência calculada.' },
+              { tit: 'NDF',                 sub: 'Non-deliverable forward',    s: 'soon', d: 'Precificação de NDF e leitura de prêmio implícito.' },
+              { tit: 'Swaps',               sub: 'DI × Pré · USD × CDI',       s: 'soon', d: 'Estrutura de swap com leg fixa e flutuante. Avaliação a mercado.' },
+              { tit: 'Biblioteca técnica',  sub: 'Glossário curto',            s: 'live', d: 'Definições objetivas e fórmulas mínimas. Sem aula longa.' },
+            ].map((c, i) => (
+              <div key={i} className="panel" style={{ padding: 22 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+                  <div>
+                    <p className="display-sm" style={{ color: 'var(--off)' }}>{c.tit}</p>
+                    <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 4 }}>{c.sub}</p>
+                  </div>
+                  <span className={'pill ' + c.s}>{c.s === 'live' ? 'Ao vivo' : c.s === 'beta' ? 'Beta' : 'Em breve'}</span>
+                </div>
+                <p style={{ fontSize: 13, color: 'var(--cinza)', lineHeight: 1.6 }}>{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PARA QUEM */}
+      <section style={{ padding: '80px 0', background: 'var(--off)', color: 'var(--grafite)' }} id="para-quem">
+        <div className="wrap-wide">
+          <div className="seclabel">Usuário-alvo</div>
+          <h2 className="display-md" style={{ maxWidth: '22ch' }}>
+            Tesouraria sem o custo<br/>de uma tesouraria.
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 56, marginTop: 48 }} className="alvo-grid">
+            {/* Para quem */}
+            <div>
+              <p className="label" style={{ color: 'var(--azul)', marginBottom: 18 }}>É para você se</p>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {[
+                  'Dono ou gestor de empresa de comércio exterior (importação ou exportação)',
+                  'CFO ou financeiro de empresa pequena/média com exposição em dólar',
+                  'Escritório de investimento que atende empresas e precisa validar preço bancário',
+                  'Assessor que precisa entender estrutura de preço antes de conversar com cliente ou banco',
+                  'Profissional de backoffice que opera câmbio, NDF, swap ou hedge cambial',
+                ].map((line, i) => (
+                  <li key={i} style={{ display: 'grid', gridTemplateColumns: '24px 1fr', gap: 14, alignItems: 'baseline', fontSize: 15, lineHeight: 1.55 }}>
+                    <span className="mono" style={{ color: 'var(--azul)', fontSize: 11 }}>{String(i+1).padStart(2,'0')}</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* O que não é */}
+            <div style={{
+              background: 'var(--grafite)',
+              color: 'var(--off)',
+              padding: 32,
+              borderRadius: 4,
+              backgroundImage:
+                'linear-gradient(rgba(166,166,166,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(166,166,166,.05) 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+            }}>
+              <p className="label" style={{ color: 'var(--lime)', marginBottom: 18 }}>DATA.VOL não é</p>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10, fontFamily: 'var(--mono)', fontSize: 13 }}>
+                {[
+                  'Plataforma de day trade',
+                  'Home broker',
+                  'Sala de calls ou canal de recomendação',
+                  'Consultoria individual de investimento',
+                  'Curso de educação financeira',
+                  'Promessa de retorno',
+                ].map((line, i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--cinza)' }}>
+                    <span style={{
+                      width: 10, height: 1.5, background: 'var(--cinza)', flexShrink: 0,
+                    }}></span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <p style={{ fontSize: 12, color: 'var(--cinza-2)', marginTop: 22, lineHeight: 1.6, fontFamily: 'var(--mono)' }}>
+                Ferramenta de cálculo, organização de dados e leitura de preço. Não substitui análise regulada, gestão profissional ou política formal de hedge.
+              </p>
+            </div>
+          </div>
+          <style>{`@media (max-width: 880px) { .alvo-grid { grid-template-columns: 1fr !important; gap: 40px !important; } }`}</style>
+        </div>
+      </section>
+
+      {/* ASSINATURA */}
+      <section style={{ padding: '80px 0', borderTop: '1px solid var(--rule-dark)' }} id="assinatura">
+        <div className="wrap-wide">
+          <div className="seclabel lime">Assinatura</div>
+          <h2 className="display-md" style={{ color: 'var(--off)', maxWidth: '22ch' }}>
+            Um plano.<br/>Recorrência por utilidade.
+          </h2>
+          <p className="lead-sm" style={{ color: 'var(--cinza)', marginTop: 16, maxWidth: '52ch' }}>
+            Sem freemium, sem trial obscuro, sem upgrades disfarçados. O valor da ferramenta vem do uso recorrente e da atualização contínua dos dados.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16, marginTop: 36 }} className="plan-grid">
+            {/* Main plan */}
+            <div className="panel" style={{ padding: 36, borderColor: 'var(--lime)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <p className="label" style={{ color: 'var(--lime)', marginBottom: 6 }}>Plano Mesa</p>
+                  <h3 className="display-md" style={{ color: 'var(--off)' }}>Acesso completo</h3>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p className="mono" style={{ fontSize: 36, color: 'var(--off)', lineHeight: 1 }}>R$ 480<span style={{ fontSize: 14, color: 'var(--cinza)' }}>/mês</span></p>
+                  <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 6 }}>cobrança trimestral · R$ 1.440</p>
+                </div>
+              </div>
+
+              <ul style={{ listStyle: 'none', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', marginTop: 22, padding: '22px 0', borderTop: '1px solid var(--rule-dark)', borderBottom: '1px solid var(--rule-dark)' }}>
+                {[
+                  'Curva dólar forward ao vivo',
+                  'Curvas de juros (DI futuro)',
+                  'NDF e swaps',
+                  'Comparador banco × referência',
+                  'Histórico ilimitado de consultas',
+                  'Biblioteca técnica',
+                  'Até 3 usuários',
+                  'Disclaimer e auditabilidade',
+                ].map((line, i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 10, fontSize: 13, color: 'var(--off)' }}>
+                    <span style={{ color: 'var(--lime)', fontFamily: 'var(--mono)', fontSize: 10 }}>✓</span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+
+              <div style={{ display: 'flex', gap: 10, marginTop: 22, flexWrap: 'wrap' }}>
+                <button onClick={openLogin} className="btn btn-lime">Solicitar acesso →</button>
+                <a href="#/dashboard" className="btn btn-ghost on-dark">Ver dentro do produto</a>
+              </div>
+            </div>
+
+            {/* Aside */}
+            <div className="panel" style={{ padding: 28, background: 'transparent', borderStyle: 'dashed', borderColor: 'var(--rule-dark-strong)' }}>
+              <p className="label" style={{ color: 'var(--cinza)', marginBottom: 14 }}>Plano corporativo</p>
+              <p className="lead-sm" style={{ color: 'var(--off)', marginBottom: 20 }}>
+                Mais de 3 usuários, integrações, dados via API ou cobertura sob medida.
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--cinza)', lineHeight: 1.6, marginBottom: 24 }}>
+                Conversamos com a empresa, mapeamos o uso e calculamos o plano. Sem mensalidade tabelada.
+              </p>
+              <a href="mailto:mesa@datavol.com" className="btn-link">mesa@datavol.com →</a>
+            </div>
+          </div>
+          <style>{`@media (max-width: 880px) { .plan-grid { grid-template-columns: 1fr !important; } }`}</style>
+        </div>
+      </section>
+
+      {/* COMPLIANCE / DISCLAIMER */}
+      <section style={{ padding: '60px 0', borderTop: '1px solid var(--rule-dark)', background: 'var(--black-2)' }}>
+        <div className="wrap-wide">
+          <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 32 }} className="comp-grid">
+            <div className="label" style={{ color: 'var(--cinza)' }}>Compliance</div>
+            <p className="mono" style={{ fontSize: 12, color: 'var(--cinza)', lineHeight: 1.85, maxWidth: '92ch' }}>
+              DATA.VOL é uma ferramenta educacional e analítica de apoio à leitura de preços e instrumentos financeiros. Os cálculos apresentados são estimativas baseadas em dados, premissas e metodologias informadas. Não constituem recomendação individual de investimento, operação, hedge, compra, venda ou contratação de produto financeiro. Decisões financeiras devem considerar o contexto específico da empresa, política de risco, documentação contratual e assessoria profissional habilitada quando necessário.
+            </p>
+          </div>
+          <style>{`@media (max-width: 720px) { .comp-grid { grid-template-columns: 1fr !important; gap: 14px !important; } }`}</style>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer style={{ background: 'var(--black)', padding: '60px 0 30px', borderTop: '1px solid var(--rule-dark)' }}>
+        <div className="wrap-wide">
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: 40, marginBottom: 48 }} className="footer-g">
+            <div>
+              <window.Lockup size={32} fontSize={26} dot="lime" />
+              <p className="mono" style={{ fontSize: 12, color: 'var(--cinza)', lineHeight: 1.7, marginTop: 16, maxWidth: '36ch' }}>
+                Curvas calculadas.<br/>
+                Preços legíveis.<br/>
+                Decisões menos assimétricas.
+              </p>
+            </div>
+            <div>
+              <h5 className="label-sm" style={{ color: 'var(--lime)', marginBottom: 14 }}>Produto</h5>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: 'var(--cinza)' }}>
+                <li><a href="#/curva">Curva dólar forward</a></li>
+                <li><a href="#/juros">Curva de juros</a></li>
+                <li><a href="#/ndf">NDF</a></li>
+                <li><a href="#/comparador">Comparador</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="label-sm" style={{ color: 'var(--lime)', marginBottom: 14 }}>Empresa</h5>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: 'var(--cinza)' }}>
+                <li><a href="#produto">Proposta</a></li>
+                <li><a href="#para-quem">Para quem</a></li>
+                <li><a href="#assinatura">Assinatura</a></li>
+                <li><a href="mailto:mesa@datavol.com">mesa@datavol.com</a></li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="label-sm" style={{ color: 'var(--lime)', marginBottom: 14 }}>Aviso</h5>
+              <p className="mono" style={{ fontSize: 11, color: 'var(--cinza-2)', lineHeight: 1.8 }}>
+                Não constitui recomendação individual de investimento. Cálculos são estimativas baseadas em premissas informadas. Use com critério.
+              </p>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid var(--rule-dark)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }} className="label-sm">
+            <span style={{ color: 'var(--cinza-3)' }}>© 2026 Volatis · DATA.VOL · v2.0</span>
+            <span style={{ color: 'var(--cinza-3)' }}>volatis.com.br · mesa@datavol.com</span>
+          </div>
+          <style>{`@media (max-width: 720px) { .footer-g { grid-template-columns: 1fr 1fr !important; gap: 28px !important; } }`}</style>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+Object.assign(window, { PublicHeader, PublicLanding, HeroChart });
+
+
+/* DATA.VOL App pages (logged-in product surface) */
+
+/* ─── App shell with sidebar + ticker + header ─── */
+const AppShell = ({ route, navigate, children, crumbs = [], openLogin }) => {
+  const ticker = window.useTicker();
+  const tickerItems = [...ticker, ...ticker];
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.classList.add('app-dark');
+    return () => document.body.classList.remove('app-dark');
+  }, []);
+
+  return (
+    <div className="app-shell">
+      <div className="ticker-bar">
+        <div className="ticker-track">
+          {tickerItems.map((t, i) => (
+            <span key={i} className="ticker-item">
+              <span className="symbol-label">{t.sym}</span>
+              <span className="value">{t.v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}{t.suffix || ''}</span>
+              {t.d !== 0 && <span className={'delta ' + (t.d > 0 ? 'up' : 'down')}>{t.d > 0 ? '+' : ''}{t.d.toFixed(2)}%</span>}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="app-header">
+        <button onClick={() => setSidebarOpen(o => !o)} aria-label="Menu" style={{ display: 'none' }} className="mobile-toggle-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 7h18 M3 12h18 M3 17h18" stroke="currentColor" strokeWidth="1.4" />
+          </svg>
+        </button>
+        <window.Lockup size={28} fontSize={22} dot="lime" />
+        <div className="crumb" style={{ marginLeft: 8 }}>
+          {crumbs.map((c, i) => (
+            <React.Fragment key={i}>
+              <span className="sep">/</span>
+              <span className={i === crumbs.length - 1 ? 'current' : ''}>{c}</span>
+            </React.Fragment>
+          ))}
+        </div>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span className="label-sm" style={{ color: 'var(--cinza)' }}>25 mai 2026 · 14:42 BRT</span>
+          <button className="btn-sm btn btn-quiet" style={{ color: 'var(--cinza)', borderColor: 'var(--rule-dark-strong)' }}>
+            Notif · 3
+          </button>
+          <button onClick={() => navigate('/')} className="btn-sm btn btn-quiet" style={{ color: 'var(--cinza)', borderColor: 'var(--rule-dark-strong)' }}>
+            Sair
+          </button>
+        </div>
+        <style>{`@media (max-width: 980px) { .mobile-toggle-btn { display: flex !important; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--off); } }`}</style>
+      </div>
+
+      <div className="app-body">
+        <aside className={'sidebar' + (sidebarOpen ? ' open' : '')}>
+          {window.APP_NAV.map((group, gi) => (
+            <div key={gi} className="sidebar-section">
+              <h6>{group.group}</h6>
+              {group.items.map(item => (
+                <a key={item.route} href={'#' + item.route} className={'sidebar-item' + (route === item.route ? ' active' : '')}>
+                  {item.label}
+                  {item.beta && <span className="badge" style={{ background: 'rgba(246, 183, 60, .15)', color: 'var(--warn)' }}>BETA</span>}
+                  {item.soon && <span className="badge" style={{ background: 'rgba(166,166,166,.12)', color: 'var(--cinza)' }}>EM BREVE</span>}
+                </a>
+              ))}
+            </div>
+          ))}
+        </aside>
+
+        <main className="app-main">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Dashboard ─── */
+const DashboardPage = () => (
+  <div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+      <div>
+        <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Painel</p>
+        <h1 className="display-md" style={{ color: 'var(--off)' }}>Dashboard</h1>
+      </div>
+      <p className="label-sm" style={{ color: 'var(--cinza)' }}>Última atualização · 25/mai 14:42:18</p>
+    </div>
+
+    <div className="kpi-row" style={{ marginBottom: 24 }}>
+      {[
+        { l: 'USD/BRL spot',     v: '5,1820', d: '+0,34% hoje',          up: true },
+        { l: 'DI 1Y',            v: '11,18%', d: '+4 bps',               up: true },
+        { l: 'Forward 12M',      v: '5,5180', d: 'carrego 6,49% a.a.',   dim: true },
+        { l: 'Consultas / mês',  v: '124',    d: 'limite ∞',             dim: true },
+        { l: 'Sessão atual',     v: '00:38',  d: 'desde 14:04',          dim: true },
+      ].map((k, i) => (
+        <div key={i} className="kpi">
+          <div className="kpi-label">{k.l}</div>
+          <div className="kpi-value">{k.v}</div>
+          <div className={'kpi-delta' + (k.dim ? '' : k.up ? ' up' : ' down')}>{k.d}</div>
+        </div>
+      ))}
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24 }} className="dash-grid">
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Curva dólar forward · USD/BRL</span>
+          <a href="#/curva" className="btn-link">Abrir ferramenta →</a>
+        </div>
+        <window.HeroChart />
+        <p className="label-sm" style={{ color: 'var(--cinza-3)', marginTop: 16 }}>
+          Referência DATA.VOL em lime · cotação típica de banco em tracejado · spread anotado em 12M
+        </p>
+      </div>
+
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Atividade recente</span>
+          <a href="#/historico" className="btn-link">Histórico →</a>
+        </div>
+        <div>
+          {[
+            { t: '14:38', a: 'Comparador',    e: 'USD/BRL 6M banco 5,392 vs ref 5,362 · spread 30 bps' },
+            { t: '14:21', a: 'Curva forward', e: 'Curva exportada (PDF) USD/BRL 36M' },
+            { t: '13:54', a: 'Curva juros',   e: 'Vertices DI futuro recalculados (auto)' },
+            { t: 'ontem', a: 'Comparador',    e: 'EUR/BRL 3M banco 5,712 vs ref 5,696' },
+            { t: 'ontem', a: 'Curva forward', e: 'USD/BRL 12M consulta · 5,518' },
+            { t: '23 mai', a: 'Biblioteca',   e: 'Definição "carrego cambial" consultada' },
+          ].map((row, i) => (
+            <div key={i} style={{ display: 'grid', gridTemplateColumns: '52px 96px 1fr', gap: 12, padding: '11px 0', borderBottom: i === 5 ? 'none' : '1px solid var(--rule-dark)', alignItems: 'baseline' }}>
+              <span className="label-sm" style={{ color: 'var(--cinza-3)' }}>{row.t}</span>
+              <span className="label-sm" style={{ color: 'var(--lime)' }}>{row.a}</span>
+              <span style={{ fontSize: 12.5, color: 'var(--off)', fontFamily: 'var(--mono)' }}>{row.e}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+    <style>{`@media (max-width: 1100px) { .dash-grid { grid-template-columns: 1fr !important; } }`}</style>
+
+    {/* Quick access tools */}
+    <div style={{ marginTop: 24 }}>
+      <div className="seclabel" style={{ color: 'var(--cinza)' }}>Ferramentas</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+        {[
+          { t: 'Curva forward', s: 'USD/BRL · 36M', r: '/curva', live: true },
+          { t: 'Curva de juros', s: 'DI · Pré · Cupom', r: '/juros', beta: true },
+          { t: 'Comparador',    s: 'Banco × referência', r: '/comparador', beta: true },
+          { t: 'NDF',           s: 'Non-deliverable',    r: '/ndf', soon: true },
+          { t: 'Swaps',         s: 'DI × Pré · USD',     r: '/swaps', soon: true },
+          { t: 'Biblioteca',    s: 'Glossário',          r: '/biblioteca', live: true },
+        ].map((tool, i) => (
+          <a key={i} href={'#' + tool.r} className="panel" style={{ padding: 18, display: 'block', transition: 'border-color .15s ease' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+              <p style={{ fontFamily: 'var(--display)', fontSize: 22, color: 'var(--off)' }}>{tool.t}</p>
+              <span className={'pill' + (tool.live ? ' live' : tool.beta ? ' beta' : ' soon')}>
+                {tool.live ? 'Live' : tool.beta ? 'Beta' : 'Em breve'}
+              </span>
+            </div>
+            <p className="label-sm" style={{ color: 'var(--cinza)' }}>{tool.s}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/* ─── Forward curve chart full size ─── */
+const ForwardCurveChart = ({ showBank = true }) => {
+  const W = 900, H = 420;
+  const PAD = { l: 70, r: 30, t: 32, b: 50 };
+  const innerW = W - PAD.l - PAD.r;
+  const innerH = H - PAD.t - PAD.b;
+
+  const data = window.FORWARD_DATA;
+  const xMax = 36;
+  const yMin = 5.10, yMax = 6.30;
+  const xs = (m) => PAD.l + (m / xMax) * innerW;
+  const ys = (v) => PAD.t + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+
+  const refPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xs(d.m).toFixed(1)} ${ys(d.ref).toFixed(1)}`).join(' ');
+  const bankPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${xs(d.m).toFixed(1)} ${ys(d.bank).toFixed(1)}`).join(' ');
+
+  const yTicks = [5.1, 5.3, 5.5, 5.7, 5.9, 6.1, 6.3];
+  const xTicks = [0, 1, 3, 6, 9, 12, 18, 24, 36];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+      {/* gridlines */}
+      {yTicks.map(t => (
+        <line key={'y'+t} x1={PAD.l} y1={ys(t)} x2={W - PAD.r} y2={ys(t)} stroke="rgba(166,166,166,.1)" strokeDasharray="2 4" />
+      ))}
+      {xTicks.map(t => (
+        <line key={'x'+t} x1={xs(t)} y1={PAD.t} x2={xs(t)} y2={H - PAD.b} stroke="rgba(166,166,166,.07)" />
+      ))}
+      {/* axes */}
+      <line x1={PAD.l} y1={H - PAD.b} x2={W - PAD.r} y2={H - PAD.b} stroke="rgba(166,166,166,.4)" />
+      <line x1={PAD.l} y1={PAD.t} x2={PAD.l} y2={H - PAD.b} stroke="rgba(166,166,166,.4)" />
+      {/* y-axis title */}
+      <text x={PAD.l - 50} y={PAD.t + innerH / 2} fill="#A6A6A6" fontFamily="IBM Plex Mono" fontSize="9" letterSpacing="2" transform={`rotate(-90, ${PAD.l - 50}, ${PAD.t + innerH/2})`}>BRL / USD</text>
+      {/* y labels */}
+      {yTicks.map(t => (
+        <text key={'yl'+t} x={PAD.l - 10} y={ys(t)+3} textAnchor="end" fill="#A6A6A6" fontFamily="IBM Plex Mono" fontSize="10">{t.toFixed(2)}</text>
+      ))}
+      {/* x labels */}
+      {xTicks.map(t => (
+        <text key={'xl'+t} x={xs(t)} y={H - PAD.b + 18} textAnchor="middle" fill="#A6A6A6" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="1">
+          {t === 0 ? 'SPOT' : t + 'M'}
+        </text>
+      ))}
+      <text x={(PAD.l + W - PAD.r) / 2} y={H - 12} textAnchor="middle" fill="#5d5d5d" fontFamily="IBM Plex Mono" fontSize="9" letterSpacing="2">VENCIMENTO</text>
+
+      {/* bank curve (dashed) */}
+      {showBank && <path d={bankPath} fill="none" stroke="#A6A6A6" strokeWidth="1.5" strokeDasharray="5 4" />}
+      {/* ref curve (lime) */}
+      <path d={refPath} fill="none" stroke="#C6FF4D" strokeWidth="2.2" />
+
+      {/* fill between curves (lighter spread visualization) */}
+      {showBank && (
+        <path
+          d={refPath + ' ' + data.slice().reverse().map(d => `L ${xs(d.m).toFixed(1)} ${ys(d.bank).toFixed(1)}`).join(' ') + ' Z'}
+          fill="rgba(255, 107, 107, .08)"
+        />
+      )}
+
+      {/* ref points */}
+      {data.map(d => (
+        <g key={d.vert}>
+          <circle cx={xs(d.m)} cy={ys(d.ref)} r="3.5" fill="#C6FF4D" />
+          {showBank && d.m > 0 && <circle cx={xs(d.m)} cy={ys(d.bank)} r="2.5" fill="#A6A6A6" />}
+        </g>
+      ))}
+
+      {/* annotations on 12M */}
+      <g>
+        <line x1={xs(12)} y1={ys(5.518)} x2={xs(12)} y2={ys(5.560)} stroke="#ff6b6b" strokeWidth="1.5" />
+        <line x1={xs(12) - 4} y1={ys(5.560)} x2={xs(12) + 4} y2={ys(5.560)} stroke="#ff6b6b" strokeWidth="1" />
+        <line x1={xs(12) - 4} y1={ys(5.518)} x2={xs(12) + 4} y2={ys(5.518)} stroke="#ff6b6b" strokeWidth="1" />
+        <rect x={xs(12) + 10} y={ys(5.54) - 10} width="100" height="20" fill="#080A0B" stroke="rgba(255,107,107,.4)" />
+        <text x={xs(12) + 16} y={ys(5.54)+4} fill="#ff6b6b" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="1">SPREAD 76 BPS</text>
+      </g>
+
+      {/* hovers simple labels for 6M */}
+      <g>
+        <rect x={xs(6) - 32} y={ys(5.362) - 26} width="64" height="18" fill="#080A0B" stroke="rgba(198,255,77,.4)" />
+        <text x={xs(6)} y={ys(5.362) - 13} textAnchor="middle" fill="#C6FF4D" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="1">5,362</text>
+      </g>
+      <g>
+        <rect x={xs(24) - 32} y={ys(5.793) - 26} width="64" height="18" fill="#080A0B" stroke="rgba(198,255,77,.4)" />
+        <text x={xs(24)} y={ys(5.793) - 13} textAnchor="middle" fill="#C6FF4D" fontFamily="IBM Plex Mono" fontSize="10" letterSpacing="1">5,793</text>
+      </g>
+    </svg>
+  );
+};
+
+/* ─── CURVA DÓLAR FORWARD flagship tool ─── */
+const CurvaForwardPage = () => {
+  const [par, setPar] = useState('USD/BRL');
+  const [date, setDate] = useState('25/05/2026');
+  const [showBank, setShowBank] = useState(true);
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 22 }}>
+        <div>
+          <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Curva forward</p>
+          <h1 className="display-md" style={{ color: 'var(--off)' }}>USD/BRL</h1>
+          <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 8 }}>
+            Curva calculada a partir de DI futuro × taxa internacional · vertices até 36 meses
+          </p>
+        </div>
+        <span className="pill live">Atualizada agora</span>
+      </div>
+
+      {/* Inputs row */}
+      <div className="panel tight" style={{ marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto auto', gap: 16, alignItems: 'end' }} className="inputs-grid">
+          <div>
+            <label className="label-input on-dark">Par</label>
+            <select value={par} onChange={e => setPar(e.target.value)} className="input on-dark">
+              <option>USD/BRL</option>
+              <option>EUR/BRL</option>
+              <option>GBP/BRL</option>
+              <option>JPY/BRL</option>
+            </select>
+          </div>
+          <div>
+            <label className="label-input on-dark">Data de referência</label>
+            <input type="text" value={date} onChange={e => setDate(e.target.value)} className="input on-dark" />
+          </div>
+          <div>
+            <label className="label-input on-dark">Curva base</label>
+            <select className="input on-dark">
+              <option>DI futuro × CME (auto)</option>
+              <option>BMF × CME</option>
+              <option>Manual</option>
+            </select>
+          </div>
+          <button className="btn btn-lime">Recalcular</button>
+          <button className="btn btn-quiet" style={{ color: 'var(--cinza)' }}>Exportar</button>
+        </div>
+        <style>{`@media (max-width: 880px) { .inputs-grid { grid-template-columns: 1fr 1fr !important; } }`}</style>
+      </div>
+
+      {/* KPI row */}
+      <div className="kpi-row" style={{ marginBottom: 20 }}>
+        {[
+          { l: 'Spot',          v: '5,1820', d: '+0,34% hoje',                up: true },
+          { l: 'Carrego 12M',   v: '6,49%',  d: 'a.a. · base DU',             dim: true },
+          { l: 'Ref. DATA.VOL 12M', v: '5,5180', d: '↑ +0,336 vs spot',         dim: true },
+          { l: 'Banco típico 12M',  v: '5,5600', d: '+76 bps vs ref',          down: true },
+          { l: 'Próximo update', v: '00:18', d: 'min',                        dim: true },
+        ].map((k, i) => (
+          <div key={i} className="kpi">
+            <div className="kpi-label">{k.l}</div>
+            <div className="kpi-value">{k.v}</div>
+            <div className={'kpi-delta' + (k.dim ? '' : k.up ? ' up' : ' down')}>{k.d}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Chart */}
+      <div className="chart" style={{ background: 'var(--black-2)', marginBottom: 20 }}>
+        <span className="chart-title">USD/BRL · forward curve · ref. 25 mai 2026</span>
+        <div className="chart-legend">
+          <span className="item"><span className="swatch" style={{ background: 'var(--lime)' }}></span>DATA.VOL</span>
+          <span className="item"><span className="swatch dashed"></span>Banco típico</span>
+          <button onClick={() => setShowBank(b => !b)} className="label-sm" style={{ color: 'var(--cinza)', cursor: 'pointer', marginLeft: 14, textTransform: 'uppercase' }}>
+            {showBank ? '[ esconder banco ]' : '[ mostrar banco ]'}
+          </button>
+        </div>
+        <ForwardCurveChart showBank={showBank} />
+      </div>
+
+      {/* Table of maturities */}
+      <div className="panel" style={{ padding: 0, marginBottom: 20 }}>
+        <div className="panel-header" style={{ padding: '14px 22px' }}>
+          <span className="panel-title">Tabela de vencimentos</span>
+          <span className="panel-sub">9 vértices · BRL/USD · ref 25/05/2026</span>
+        </div>
+        <table className="dtable">
+          <thead>
+            <tr>
+              <th>Vencimento</th>
+              <th>Dias úteis</th>
+              <th>Ref. DATA.VOL</th>
+              <th>Carrego (a.a.)</th>
+              <th>Banco típico</th>
+              <th>Spread</th>
+              <th>Custo embutido</th>
+              <th>Δ vs spot</th>
+            </tr>
+          </thead>
+          <tbody>
+            {window.FORWARD_DATA.map((d, i) => {
+              const spread = d.bank - d.ref;
+              const bps = Math.round(spread / d.ref * 10000);
+              const carrego = i === 0 ? 0 : ((d.ref / 5.182 - 1) * 360 / d.du) * 100;
+              const deltaSpot = d.ref - 5.182;
+              return (
+                <tr key={d.vert}>
+                  <td className="bold">{d.vert}</td>
+                  <td className="dim">{d.du}</td>
+                  <td className="bold" style={{ color: 'var(--lime)' }}>{d.ref.toFixed(4).replace('.', ',')}</td>
+                  <td>{i === 0 ? ',' : carrego.toFixed(2).replace('.', ',') + '%'}</td>
+                  <td>{i === 0 ? ',' : d.bank.toFixed(4).replace('.', ',')}</td>
+                  <td className={i === 0 ? 'dim' : 'down'}>{i === 0 ? ',' : '+' + bps + ' bps'}</td>
+                  <td className={i === 0 ? 'dim' : 'down'}>{i === 0 ? ',' : 'R$ ' + spread.toFixed(4).replace('.', ',') + '/USD'}</td>
+                  <td className={i === 0 ? 'dim' : 'up'}>{i === 0 ? ',' : '+' + deltaSpot.toFixed(4).replace('.', ',')}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Comparator */}
+      <div style={{ marginBottom: 20 }}>
+        <div className="seclabel lime">Comparador rápido</div>
+        <div className="comparator">
+          <div className="comparator-cell ref">
+            <p className="label-sm" style={{ color: 'var(--lime)', marginBottom: 8 }}>Referência DATA.VOL · 12M</p>
+            <p className="mono" style={{ fontSize: 42, lineHeight: 1, color: 'var(--off)', marginBottom: 8 }}>5,5180</p>
+            <p className="label-sm" style={{ color: 'var(--cinza)' }}>Carrego 6,49% a.a. · spot 5,182 + 0,336</p>
+          </div>
+          <div className="comparator-vs">VS</div>
+          <div className="comparator-cell">
+            <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Cotação do banco · 12M</p>
+            <p className="mono" style={{ fontSize: 42, lineHeight: 1, color: 'var(--down)', marginBottom: 8 }}>5,5600</p>
+            <p className="label-sm" style={{ color: 'var(--down)' }}>+76 bps · custo embutido R$ 0,042/USD</p>
+          </div>
+        </div>
+        <p className="label-sm" style={{ color: 'var(--cinza-3)', marginTop: 12, lineHeight: 1.6 }}>
+          Em um contrato de USD 500.000, o spread implícito do banco representa <span style={{ color: 'var(--down)' }}>R$ 21.000</span> de custo adicional vs. a referência calculada.
+        </p>
+      </div>
+
+      {/* Methodology */}
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Premissas e metodologia</span>
+          <a href="#/biblioteca" className="btn-link">Biblioteca →</a>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 }} className="meth-grid">
+          <div>
+            <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 10 }}>Fórmula base</p>
+            <p className="mono" style={{ fontSize: 14, padding: '12px 16px', background: 'var(--black)', border: '1px solid var(--rule-dark)', color: 'var(--off)', borderRadius: 3 }}>
+              F<sub>t</sub> = S<sub>0</sub> × (1 + i<sub>BRL</sub>)<sup>t/360</sup> / (1 + i<sub>USD</sub>)<sup>t/360</sup>
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--cinza)', marginTop: 12, lineHeight: 1.7 }}>
+              Cobertura de paridade descoberta de juros. Sem ajuste para risco-país explícito; o prêmio é absorvido na curva DI doméstica.
+            </p>
+          </div>
+          <div>
+            <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 10 }}>Insumos</p>
+            <ul style={{ listStyle: 'none', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--off)', lineHeight: 1.9 }}>
+              <li>· <span style={{ color: 'var(--cinza)' }}>S₀</span> spot BM&F PTAX consultado às 14:30 BRT</li>
+              <li>· <span style={{ color: 'var(--cinza)' }}>i<sub>BRL</sub></span> curva DI futuro pré (B3) interpolada</li>
+              <li>· <span style={{ color: 'var(--cinza)' }}>i<sub>USD</sub></span> CME SOFR + cupom cambial implícito</li>
+              <li>· Cotação banco típica: spread médio de 3 dealers</li>
+              <li>· Atualização: incremental a cada 60s · full a cada 15min</li>
+            </ul>
+          </div>
+        </div>
+        <style>{`@media (max-width: 720px) { .meth-grid { grid-template-columns: 1fr !important; } }`}</style>
+      </div>
+
+      <p className="mono" style={{ fontSize: 11, color: 'var(--cinza-3)', lineHeight: 1.7, marginTop: 26, maxWidth: '92ch' }}>
+        Os valores apresentados são estimativas baseadas em dados e premissas informadas. Não constituem recomendação individual de investimento, hedge ou contratação de produto financeiro. Decisões devem considerar contexto da empresa, política de risco e assessoria habilitada.
+      </p>
+    </div>
+  );
+};
+
+/* ─── Comparador (input form for bank quote vs reference) ─── */
+const ComparadorPage = () => {
+  const [bankPrice, setBankPrice] = useState('5,5600');
+  const [usdAmount, setUsdAmount] = useState('500000');
+  const refPrice = 5.5180;
+  const bp = parseFloat(bankPrice.replace(',', '.')) || refPrice;
+  const usd = parseFloat(usdAmount.replace(/\D/g, '')) || 0;
+  const spread = bp - refPrice;
+  const bps = Math.round(spread / refPrice * 10000);
+  const cost = usd * spread;
+
+  return (
+    <div>
+      <div style={{ marginBottom: 22 }}>
+        <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Comparador</p>
+        <h1 className="display-md" style={{ color: 'var(--off)' }}>Banco × referência</h1>
+        <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 8 }}>
+          Cole a cotação que o banco enviou. Compare com a referência calculada e veja o custo implícito.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: 24 }} className="cmp-grid">
+        {/* Inputs */}
+        <div className="panel">
+          <div className="panel-header">
+            <span className="panel-title">Cotação a comparar</span>
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label className="label-input on-dark">Par</label>
+            <select className="input on-dark">
+              <option>USD/BRL</option>
+              <option>EUR/BRL</option>
+            </select>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label className="label-input on-dark">Vencimento</label>
+            <select className="input on-dark" defaultValue="12M">
+              <option>1M</option><option>3M</option><option>6M</option>
+              <option>12M</option><option>24M</option>
+            </select>
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label className="label-input on-dark">Cotação do banco · BRL/USD</label>
+            <input className="input on-dark" value={bankPrice} onChange={e => setBankPrice(e.target.value)} />
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label className="label-input on-dark">Notional · USD</label>
+            <input className="input on-dark" value={usdAmount} onChange={e => setUsdAmount(e.target.value)} />
+          </div>
+
+          <button className="btn btn-lime" style={{ width: '100%', justifyContent: 'center' }}>Calcular →</button>
+        </div>
+
+        {/* Result */}
+        <div>
+          <div className="comparator" style={{ marginBottom: 16 }}>
+            <div className="comparator-cell ref">
+              <p className="label-sm" style={{ color: 'var(--lime)', marginBottom: 8 }}>Referência DATA.VOL · 12M</p>
+              <p className="mono" style={{ fontSize: 42, lineHeight: 1, color: 'var(--off)', marginBottom: 8 }}>{refPrice.toFixed(4).replace('.', ',')}</p>
+              <p className="label-sm" style={{ color: 'var(--cinza)' }}>Carrego 6,49% a.a.</p>
+            </div>
+            <div className="comparator-vs">VS</div>
+            <div className="comparator-cell">
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Banco</p>
+              <p className="mono" style={{ fontSize: 42, lineHeight: 1, color: spread > 0 ? 'var(--down)' : 'var(--up)', marginBottom: 8 }}>
+                {bp.toFixed(4).replace('.', ',')}
+              </p>
+              <p className="label-sm" style={{ color: spread > 0 ? 'var(--down)' : 'var(--up)' }}>
+                {spread > 0 ? '+' : ''}{bps} bps vs referência
+              </p>
+            </div>
+          </div>
+
+          <div className="panel" style={{ background: 'var(--black)' }}>
+            <div className="panel-header">
+              <span className="panel-title">Impacto no contrato</span>
+              <span className="panel-sub">USD {usd.toLocaleString('pt-BR')} · vencimento 12M</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16 }}>
+              {[
+                { l: 'Spread',         v: bps + ' bps',                            color: spread > 0 ? 'var(--down)' : 'var(--up)' },
+                { l: 'Δ por USD',      v: 'R$ ' + spread.toFixed(4).replace('.', ','), color: spread > 0 ? 'var(--down)' : 'var(--up)' },
+                { l: 'Custo total',    v: 'R$ ' + Math.abs(cost).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), color: spread > 0 ? 'var(--down)' : 'var(--up)' },
+                { l: 'BRL no banco',   v: 'R$ ' + (bp * usd).toLocaleString('pt-BR', { maximumFractionDigits: 0 }),    color: 'var(--off)' },
+                { l: 'BRL na ref',     v: 'R$ ' + (refPrice * usd).toLocaleString('pt-BR', { maximumFractionDigits: 0 }), color: 'var(--off)' },
+              ].map((k, i) => (
+                <div key={i}>
+                  <p className="label-sm" style={{ color: 'var(--cinza-3)', marginBottom: 6 }}>{k.l}</p>
+                  <p className="mono" style={{ fontSize: 20, color: k.color }}>{k.v}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mono" style={{ fontSize: 11, color: 'var(--cinza-3)', marginTop: 18, lineHeight: 1.6 }}>
+              Cálculo informativo. Compare com o que o banco está cobrando, mas considere prazo de liquidação, garantias, IOF e contexto contratual.
+            </p>
+          </div>
+        </div>
+      </div>
+      <style>{`@media (max-width: 960px) { .cmp-grid { grid-template-columns: 1fr !important; } }`}</style>
+    </div>
+  );
+};
+
+/* ─── Curva de juros beta, with mini chart placeholder ─── */
+const JurosPage = () => (
+  <div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 22 }}>
+      <div>
+        <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Curvas de juros</p>
+        <h1 className="display-md" style={{ color: 'var(--off)' }}>DI futuro · Pré · Cupom</h1>
+      </div>
+      <span className="pill beta">Beta</span>
+    </div>
+
+    <div className="kpi-row" style={{ marginBottom: 20 }}>
+      {[
+        { l: 'DI 1Y',  v: '11,18%', d: '+4 bps',   up: true },
+        { l: 'DI 2Y',  v: '11,72%', d: '+2 bps',   up: true },
+        { l: 'DI 5Y',  v: '12,84%', d: '-2 bps',   down: true },
+        { l: 'CDI',    v: '10,40%', d: 'estável',  dim: true },
+        { l: 'Inclinação 1×5', v: '+166 bps', d: 'estrutura normal', dim: true },
+      ].map((k, i) => (
+        <div key={i} className="kpi">
+          <div className="kpi-label">{k.l}</div>
+          <div className="kpi-value">{k.v}</div>
+          <div className={'kpi-delta' + (k.dim ? '' : k.up ? ' up' : ' down')}>{k.d}</div>
+        </div>
+      ))}
+    </div>
+
+    <div className="panel" style={{ padding: 0 }}>
+      <div className="panel-header" style={{ padding: '14px 22px' }}>
+        <span className="panel-title">Vértices DI futuro</span>
+        <span className="panel-sub">B3 · interpolação linear · 25/05/2026</span>
+      </div>
+      <table className="dtable">
+        <thead>
+          <tr>
+            <th>Vencimento</th>
+            <th>Dias úteis</th>
+            <th>Taxa nominal</th>
+            <th>Taxa exponencial</th>
+            <th>PU</th>
+            <th>Volume</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            { v: 'JAN26', du: 154, tn: '10,85%', te: '10,89%', pu: '95.412,18', vol: 'R$ 142 bi' },
+            { v: 'JUL26', du: 280, tn: '11,18%', te: '11,24%', pu: '92.108,76', vol: 'R$ 98 bi' },
+            { v: 'JAN27', du: 406, tn: '11,42%', te: '11,49%', pu: '88.842,32', vol: 'R$ 76 bi' },
+            { v: 'JAN28', du: 658, tn: '11,72%', te: '11,82%', pu: '80.218,44', vol: 'R$ 52 bi' },
+            { v: 'JAN29', du: 911, tn: '12,18%', te: '12,32%', pu: '72.418,12', vol: 'R$ 31 bi' },
+            { v: 'JAN31', du: 1416, tn: '12,84%', te: '13,06%', pu: '58.842,90', vol: 'R$ 14 bi' },
+          ].map((r, i) => (
+            <tr key={i}>
+              <td className="bold">{r.v}</td>
+              <td className="dim">{r.du}</td>
+              <td style={{ color: 'var(--lime)' }} className="bold">{r.tn}</td>
+              <td>{r.te}</td>
+              <td>{r.pu}</td>
+              <td className="dim">{r.vol}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+);
+
+/* ─── Generic "in progress" template for NDF / Swaps ─── */
+const ToolStubPage = ({ title, sub, bullets, placeholderTable }) => (
+  <div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 22 }}>
+      <div>
+        <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Instrumento</p>
+        <h1 className="display-md" style={{ color: 'var(--off)' }}>{title}</h1>
+        <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 8 }}>{sub}</p>
+      </div>
+      <span className="pill soon">Em desenvolvimento</span>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }} className="stub-grid">
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">O que essa ferramenta vai responder</span>
+        </div>
+        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {bullets.map((b, i) => (
+            <li key={i} style={{ display: 'grid', gridTemplateColumns: '32px 1fr', gap: 12, alignItems: 'baseline', fontSize: 13, color: 'var(--off)', lineHeight: 1.55 }}>
+              <span className="label-sm" style={{ color: 'var(--lime)' }}>{String(i+1).padStart(2,'0')}</span>
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="panel" style={{ padding: 0 }}>
+        <div className="panel-header" style={{ padding: '14px 22px' }}>
+          <span className="panel-title">Saída prevista</span>
+          <span className="panel-sub">mock</span>
+        </div>
+        {placeholderTable}
+      </div>
+    </div>
+
+    <div className="panel" style={{ marginTop: 24, background: 'transparent', borderStyle: 'dashed' }}>
+      <p className="label" style={{ color: 'var(--cinza)', marginBottom: 12 }}>Cronograma</p>
+      <p style={{ fontSize: 14, color: 'var(--off)', lineHeight: 1.6, marginBottom: 16, maxWidth: '64ch' }}>
+        Esta ferramenta está sendo desenvolvida com base em casos reais de clientes da mesa DATA.VOL. Membros podem solicitar prioridade ou enviar casos de uso.
+      </p>
+      <a href="mailto:mesa@datavol.com" className="btn-link">Enviar caso de uso →</a>
+    </div>
+    <style>{`@media (max-width: 880px) { .stub-grid { grid-template-columns: 1fr !important; } }`}</style>
+  </div>
+);
+
+const NDFPage = () => (
+  <ToolStubPage
+    title="NDF" sub="Non-deliverable forward · contratos cambiais sem entrega física"
+    bullets={[
+      'Qual é o prêmio implícito de NDF para um vencimento específico?',
+      'A taxa cotada pelo banco é coerente com a curva de mercado?',
+      'Qual o custo de carregamento de NDF vs forward com entrega?',
+      'Qual o impacto fiscal e contábil estimado do contrato?',
+    ]}
+    placeholderTable={
+      <table className="dtable">
+        <thead><tr><th>Vencimento</th><th>NDF teórica</th><th>Spread vs banco</th><th>Custo carrego</th></tr></thead>
+        <tbody>
+          {['1M','3M','6M','12M','24M'].map((v, i) => (
+            <tr key={v}>
+              <td className="bold">{v}</td>
+              <td className="dim">,</td>
+              <td className="dim">,</td>
+              <td className="dim">,</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    }
+  />
+);
+
+const SwapsPage = () => (
+  <ToolStubPage
+    title="Swaps" sub="DI × Pré, USD × CDI, hedge accounting (IFRS 9)"
+    bullets={[
+      'Qual é o valor de mercado atual do swap (MTM)?',
+      'Qual o resultado financeiro acumulado no contrato?',
+      'A efetividade do hedge está dentro do range (80%-125%)?',
+      'Qual o impacto contábil em hedge designado vs não designado?',
+    ]}
+    placeholderTable={
+      <table className="dtable">
+        <thead><tr><th>Trade</th><th>Tipo</th><th>Vencimento</th><th>MTM</th></tr></thead>
+        <tbody>
+          {[1,2,3,4,5].map(i => (
+            <tr key={i}><td className="bold">SWP-{(2000+i).toString()}</td><td className="dim">,</td><td className="dim">,</td><td className="dim">,</td></tr>
+          ))}
+        </tbody>
+      </table>
+    }
+  />
+);
+
+/* ─── Biblioteca técnica ─── */
+const BibliotecaPage = () => {
+  const [q, setQ] = useState('');
+  const entries = [
+    { term: 'Carrego cambial', desc: 'Diferença implícita entre taxa BRL e taxa USD que compõe o forward. Reflete custo de oportunidade do capital em uma moeda vs outra.' },
+    { term: 'Curva forward',   desc: 'Conjunto de preços futuros derivados via paridade de juros. Cada vértice representa um vencimento específico.' },
+    { term: 'NDF',              desc: 'Non-Deliverable Forward. Contrato cambial sem entrega física da moeda; liquida pela diferença de taxa.' },
+    { term: 'Spread bancário',  desc: 'Diferença entre a cotação que o banco oferece e a referência teórica calculada. Inclui margem do dealer, custo de balanço e prêmio de risco.' },
+    { term: 'DI futuro',        desc: 'Contrato futuro de taxa DI negociado na B3. Vetor de leitura da curva de juros doméstica.' },
+    { term: 'Cupom cambial',    desc: 'Taxa de juros em USD aplicada a operações no Brasil. Reflete custo de financiamento em dólar localmente.' },
+    { term: 'Hedge accounting', desc: 'Tratamento contábil que permite alinhar resultado de hedge e objeto coberto. IFRS 9 exige documentação e teste de efetividade.' },
+    { term: 'MTM',              desc: 'Marcação a mercado. Valor presente que o contrato teria se fosse liquidado hoje, dadas as condições atuais de mercado.' },
+    { term: 'PTAX',             desc: 'Cotação de referência do BCB, média ponderada das operações do dia. Usada para liquidação de contratos NDF e ajustes contábeis.' },
+    { term: 'Basis swap',       desc: 'Swap entre duas taxas flutuantes. Útil para arbitrar diferenças entre indexadores.' },
+  ];
+  const filtered = entries.filter(e =>
+    e.term.toLowerCase().includes(q.toLowerCase()) ||
+    e.desc.toLowerCase().includes(q.toLowerCase())
+  );
+
+  return (
+    <div>
+      <div style={{ marginBottom: 22 }}>
+        <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Suporte</p>
+        <h1 className="display-md" style={{ color: 'var(--off)' }}>Biblioteca técnica</h1>
+        <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 8 }}>
+          Glossário curto. Definições objetivas e fórmulas mínimas. Sem aula longa.
+        </p>
+      </div>
+
+      <input
+        value={q} onChange={e => setQ(e.target.value)}
+        placeholder="Buscar termo…"
+        className="input on-dark"
+        style={{ maxWidth: 360, marginBottom: 20 }}
+      />
+
+      <div className="panel" style={{ padding: 0 }}>
+        {filtered.length === 0 && <p style={{ padding: 32, color: 'var(--cinza)', fontSize: 13 }}>Nenhum termo encontrado.</p>}
+        {filtered.map((e, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 28, padding: '22px 26px', borderBottom: i === filtered.length - 1 ? 'none' : '1px solid var(--rule-dark)' }}>
+            <p style={{ fontFamily: 'var(--display)', fontSize: 22, color: 'var(--lime)' }}>{e.term}</p>
+            <p style={{ fontSize: 14, color: 'var(--off)', lineHeight: 1.6 }}>{e.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ─── Histórico ─── */
+const HistoricoPage = () => {
+  const rows = [
+    { d: '25/05 14:38', tool: 'Comparador',    inputs: 'USD/BRL · 6M · banco 5,392', result: 'spread +30 bps · custo R$ 15k em USD 500k', tag: 'comparador' },
+    { d: '25/05 14:21', tool: 'Curva forward', inputs: 'USD/BRL · 36M · ref 25/mai', result: 'exportado PDF · 9 vértices',                tag: 'curva' },
+    { d: '25/05 13:54', tool: 'Curva juros',   inputs: 'DI futuro · JAN26→JAN31',     result: '6 vértices recalculados (auto)',           tag: 'juros' },
+    { d: '24/05 17:08', tool: 'Comparador',    inputs: 'EUR/BRL · 3M · banco 5,712', result: 'spread +28 bps · custo R$ 4k em EUR 100k', tag: 'comparador' },
+    { d: '24/05 11:42', tool: 'Curva forward', inputs: 'USD/BRL · 12M',               result: 'consulta · ref 5,518',                     tag: 'curva' },
+    { d: '23/05 16:30', tool: 'Biblioteca',    inputs: 'carrego cambial',             result: 'definição consultada',                     tag: 'biblio' },
+    { d: '23/05 09:14', tool: 'Curva forward', inputs: 'USD/BRL · 24M',               result: 'consulta · ref 5,793 · spread banco +52', tag: 'curva' },
+    { d: '22/05 18:02', tool: 'Comparador',    inputs: 'USD/BRL · 12M · banco 5,584', result: 'spread +66 bps · custo R$ 33k em USD 500k', tag: 'comparador' },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16, marginBottom: 22 }}>
+        <div>
+          <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Histórico</p>
+          <h1 className="display-md" style={{ color: 'var(--off)' }}>Consultas</h1>
+          <p className="label-sm" style={{ color: 'var(--cinza)', marginTop: 8 }}>
+            Tudo que foi consultado, calculado ou exportado · auditabilidade completa
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-quiet btn-sm" style={{ color: 'var(--cinza)' }}>Filtrar</button>
+          <button className="btn btn-quiet btn-sm" style={{ color: 'var(--cinza)' }}>Exportar CSV</button>
+        </div>
+      </div>
+
+      <div className="panel" style={{ padding: 0 }}>
+        <table className="dtable">
+          <thead>
+            <tr>
+              <th>Data / hora</th>
+              <th>Ferramenta</th>
+              <th>Parâmetros</th>
+              <th>Resultado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i}>
+                <td className="dim mono">{r.d}</td>
+                <td className="bold" style={{ color: 'var(--lime)' }}>{r.tool}</td>
+                <td>{r.inputs}</td>
+                <td className="dim">{r.result}</td>
+                <td className="right"><a className="btn-link" style={{ fontSize: 10 }} href={'#/' + r.tag}>Abrir →</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Assinatura ─── */
+const AssinaturaPage = () => (
+  <div>
+    <div style={{ marginBottom: 22 }}>
+      <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Conta</p>
+      <h1 className="display-md" style={{ color: 'var(--off)' }}>Assinatura</h1>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24 }} className="sub-grid">
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Plano atual</span>
+          <span className="pill live">Ativo</span>
+        </div>
+        <h2 className="display-md" style={{ color: 'var(--off)', marginBottom: 6 }}>Mesa</h2>
+        <p style={{ fontSize: 14, color: 'var(--cinza)', marginBottom: 22 }}>
+          Acesso completo · até 3 usuários · cobrança trimestral
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, border: '1px solid var(--rule-dark)' }}>
+          <div style={{ padding: 18, borderRight: '1px solid var(--rule-dark)' }}>
+            <p className="label-sm" style={{ color: 'var(--cinza-3)', marginBottom: 6 }}>Mensalidade</p>
+            <p className="mono" style={{ fontSize: 24, color: 'var(--off)' }}>R$ 480</p>
+          </div>
+          <div style={{ padding: 18, borderRight: '1px solid var(--rule-dark)' }}>
+            <p className="label-sm" style={{ color: 'var(--cinza-3)', marginBottom: 6 }}>Próximo ciclo</p>
+            <p className="mono" style={{ fontSize: 24, color: 'var(--off)' }}>15/jul/26</p>
+          </div>
+          <div style={{ padding: 18 }}>
+            <p className="label-sm" style={{ color: 'var(--cinza-3)', marginBottom: 6 }}>Valor previsto</p>
+            <p className="mono" style={{ fontSize: 24, color: 'var(--lime)' }}>R$ 1.440</p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
+          <button className="btn btn-quiet" style={{ color: 'var(--off)', borderColor: 'var(--rule-dark-strong)' }}>Faturas</button>
+          <button className="btn btn-quiet" style={{ color: 'var(--off)', borderColor: 'var(--rule-dark-strong)' }}>Método de pagamento</button>
+          <button className="btn btn-quiet" style={{ color: 'var(--down)', borderColor: 'rgba(255,107,107,.3)' }}>Cancelar</button>
+        </div>
+      </div>
+
+      <div className="panel" style={{ background: 'transparent', borderStyle: 'dashed' }}>
+        <p className="label" style={{ color: 'var(--cinza)', marginBottom: 14 }}>Upgrade corporativo</p>
+        <p className="lead-sm" style={{ color: 'var(--off)', marginBottom: 18 }}>
+          Acima de 3 usuários, dados via API ou cobertura sob medida.
+        </p>
+        <p style={{ fontSize: 13, color: 'var(--cinza)', lineHeight: 1.6, marginBottom: 20 }}>
+          Conversamos com a empresa antes de tabelar.
+        </p>
+        <a href="mailto:mesa@datavol.com" className="btn-link">mesa@datavol.com →</a>
+      </div>
+    </div>
+
+    <div className="panel" style={{ marginTop: 24 }}>
+      <div className="panel-header">
+        <span className="panel-title">Uso este ciclo</span>
+        <span className="panel-sub">desde 15/abr · 41 dias</span>
+      </div>
+      <div className="kpi-row" style={{ border: 'none', background: 'transparent' }}>
+        {[
+          { l: 'Consultas',     v: '124',  d: 'ilimitado' },
+          { l: 'Exportações',   v: '08',   d: 'ilimitado' },
+          { l: 'Usuários',      v: '02/3', d: '1 vaga aberta' },
+          { l: 'API requests',  v: '0',    d: 'não incluído' },
+        ].map((k, i) => (
+          <div key={i} className="kpi" style={{ borderRight: '1px solid var(--rule-dark)', borderBottom: 'none' }}>
+            <div className="kpi-label">{k.l}</div>
+            <div className="kpi-value">{k.v}</div>
+            <div className="kpi-delta">{k.d}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <style>{`@media (max-width: 980px) { .sub-grid { grid-template-columns: 1fr !important; } }`}</style>
+  </div>
+);
+
+/* ─── Admin pages ─── */
+const AdminPage = ({ navigate }) => {
+  const [tab, setTab] = useState('overview');
+  return (
+    <div>
+      <div style={{ marginBottom: 22 }}>
+        <p className="label" style={{ color: 'var(--lime)', marginBottom: 8 }}>Admin</p>
+        <h1 className="display-md" style={{ color: 'var(--off)' }}>Painel de administração</h1>
+      </div>
+
+      <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--rule-dark)', marginBottom: 22 }}>
+        {[
+          { k: 'overview', l: 'Visão geral' },
+          { k: 'members',  l: 'Membros' },
+          { k: 'system',   l: 'Sistema' },
+        ].map(t => (
+          <button
+            key={t.k}
+            onClick={() => setTab(t.k)}
+            className="label"
+            style={{
+              padding: '12px 18px',
+              color: tab === t.k ? 'var(--lime)' : 'var(--cinza)',
+              borderBottom: '2px solid',
+              borderColor: tab === t.k ? 'var(--lime)' : 'transparent',
+              transform: 'translateY(1px)',
+            }}
+          >{t.l}</button>
+        ))}
+      </div>
+
+      {tab === 'overview' && (
+        <>
+          <div className="kpi-row" style={{ marginBottom: 22 }}>
+            {[
+              { l: 'Assinantes ativos',   v: '47',  d: '+5 esta semana', up: true },
+              { l: 'MRR',                 v: 'R$ 22.560', d: '+R$ 2.400',     up: true },
+              { l: 'Sessões / 30d',       v: '1.218', d: '+8%',           up: true },
+              { l: 'Consultas / 30d',     v: '4.842', d: 'média 103/usr', dim: true },
+              { l: 'Churn 30d',           v: '2,1%',  d: '-0,4 p.p.',    up: true },
+            ].map((k, i) => (
+              <div key={i} className="kpi">
+                <div className="kpi-label">{k.l}</div>
+                <div className="kpi-value">{k.v}</div>
+                <div className={'kpi-delta' + (k.dim ? '' : k.up ? ' up' : ' down')}>{k.d}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 22 }} className="adm-grid">
+            <div className="panel">
+              <div className="panel-header">
+                <span className="panel-title">Atividade do sistema</span>
+                <span className="panel-sub">últimas 24h</span>
+              </div>
+              <div>
+                {[
+                  { t: '14:32', a: 'sistema',           e: 'Novo membro convidado: m.silva@cambio.com.br' },
+                  { t: '12:08', a: 'e.gehrke',          e: 'Permissão alterada → admin' },
+                  { t: '09:14', a: 'sistema',           e: 'Atualização de curvas: DI futuro + CME (auto)' },
+                  { t: '08:55', a: 'sistema',           e: 'Backup Supabase concluído (4,2 GB)' },
+                  { t: 'ontem', a: 'sistema',           e: 'Vol Letter Nº 003 enviada (283 destinatários)' },
+                  { t: 'ontem', a: 'e.gehrke',          e: 'Ferramenta publicada: Comparador (beta)' },
+                ].map((row, i) => (
+                  <div key={i} style={{ display: 'grid', gridTemplateColumns: '60px 130px 1fr', gap: 14, padding: '12px 0', borderBottom: i === 5 ? 'none' : '1px solid var(--rule-dark)', alignItems: 'baseline' }}>
+                    <span className="label-sm" style={{ color: 'var(--cinza-3)' }}>{row.t}</span>
+                    <span className="label-sm" style={{ color: 'var(--lime)' }}>{row.a}</span>
+                    <span style={{ fontSize: 12.5, color: 'var(--off)' }}>{row.e}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="panel" style={{ marginBottom: 16 }}>
+                <div className="panel-header">
+                  <span className="panel-title">Saúde dos dados</span>
+                </div>
+                {[
+                  { l: 'DI futuro (B3)',      v: 'OK',   age: 'há 28s' },
+                  { l: 'PTAX (BCB)',          v: 'OK',   age: 'há 1m' },
+                  { l: 'CME SOFR',            v: 'OK',   age: 'há 3m' },
+                  { l: 'Cupom cambial',       v: 'lag',  age: 'há 22m', warn: true },
+                  { l: 'Backup diário',       v: 'OK',   age: 'esta noite' },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: i === 4 ? 'none' : '1px solid var(--rule-dark)', fontSize: 13 }}>
+                    <span style={{ color: 'var(--off)' }}>{r.l}</span>
+                    <span style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      <span className="label-sm" style={{ color: 'var(--cinza-3)' }}>{r.age}</span>
+                      <span className="label-sm" style={{ color: r.warn ? 'var(--warn)' : 'var(--lime)' }}>● {r.v}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="panel" style={{ background: 'transparent', borderStyle: 'dashed' }}>
+                <p className="label" style={{ color: 'var(--cinza)', marginBottom: 10 }}>Próximo deploy</p>
+                <p className="mono" style={{ fontSize: 14, color: 'var(--off)', marginBottom: 6 }}>v2.1 · 28/05/2026</p>
+                <p style={{ fontSize: 12, color: 'var(--cinza)', lineHeight: 1.6 }}>
+                  NDF v1 e refinamento do comparador.
+                </p>
+              </div>
+            </div>
+          </div>
+          <style>{`@media (max-width: 980px) { .adm-grid { grid-template-columns: 1fr !important; } }`}</style>
+        </>
+      )}
+
+      {tab === 'members' && <AdminMembersTab />}
+
+      {tab === 'system' && (
+        <div className="panel">
+          <div className="panel-header"><span className="panel-title">Sistema</span></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 22 }}>
+            <div>
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Versão</p>
+              <p className="mono" style={{ color: 'var(--off)', marginBottom: 18 }}>v2.0.4 · build 412</p>
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Ambiente</p>
+              <p className="mono" style={{ color: 'var(--off)', marginBottom: 18 }}>production · vercel us-east</p>
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Backend</p>
+              <p className="mono" style={{ color: 'var(--off)' }}>supabase · postgres 16 · RLS ON</p>
+            </div>
+            <div>
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Uptime 30d</p>
+              <p className="mono" style={{ color: 'var(--lime)', marginBottom: 18 }}>99,94%</p>
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Última manutenção</p>
+              <p className="mono" style={{ color: 'var(--off)', marginBottom: 18 }}>21/mai · 06:14 BRT · 3m22s</p>
+              <p className="label-sm" style={{ color: 'var(--cinza)', marginBottom: 8 }}>Próxima janela</p>
+              <p className="mono" style={{ color: 'var(--off)' }}>28/mai · 03:00 BRT · estimada 5min</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AdminMembersTab = () => {
+  const [q, setQ] = useState('');
+  const members = [
+    { id: 1, name: 'Eduardo Gehrke',        email: 'e.gehrke@datavol.com',          role: 'admin',     since: '12/03/2026', co: 'Volatis',          status: 'ativo' },
+    { id: 2, name: 'Mateus Silva',          email: 'm.silva@cambio.com.br',         role: 'membro',    since: '24/04/2026', co: 'Câmbio Verde',     status: 'ativo' },
+    { id: 3, name: 'Bruna Costa',           email: 'bruna@bcindustria.com.br',      role: 'membro',    since: '15/04/2026', co: 'BC Indústria',     status: 'ativo' },
+    { id: 4, name: 'Pedro Almeida',         email: 'pedro@almeidaexports.com',      role: 'membro',    since: '02/04/2026', co: 'Almeida Exports',  status: 'ativo' },
+    { id: 5, name: 'Ana Mendes',            email: 'ana@mendescapital.com.br',      role: 'membro',    since: '28/03/2026', co: 'Mendes Capital',   status: 'inativo' },
+    { id: 6, name: 'Rafael Lopes',          email: 'r.lopes@tradingdesk.com.br',    role: 'membro',    since: '20/03/2026', co: 'Trading Desk',     status: 'ativo' },
+    { id: 7, name: 'Júlia Tavares',         email: 'julia@tavarespartners.com',     role: 'membro',    since: '18/03/2026', co: 'Tavares Partners', status: 'ativo' },
+    { id: 8, name: 'Felipe Souza',          email: 'felipe@souzacommodities.com',   role: 'membro',    since: '14/03/2026', co: 'Souza Commodities',status: 'ativo' },
+  ];
+  const filtered = members.filter(m => [m.name, m.email, m.co].join(' ').toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar nome, email ou empresa…" className="input on-dark" style={{ maxWidth: 360 }} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="btn btn-quiet btn-sm" style={{ color: 'var(--cinza)' }}>Exportar CSV</button>
+          <button className="btn btn-lime btn-sm">Convidar membro</button>
+        </div>
+      </div>
+      <div className="panel" style={{ padding: 0 }}>
+        <table className="dtable">
+          <thead>
+            <tr>
+              <th>Nome</th><th>Email</th><th>Empresa</th><th>Papel</th><th>Desde</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(m => (
+              <tr key={m.id}>
+                <td className="bold">{m.name}</td>
+                <td className="dim mono" style={{ fontSize: 11.5 }}>{m.email}</td>
+                <td>{m.co}</td>
+                <td>
+                  <span className="pill" style={{ background: m.role === 'admin' ? 'var(--azul)' : 'transparent', color: m.role === 'admin' ? 'var(--off)' : 'var(--cinza)', borderColor: m.role === 'admin' ? 'var(--azul)' : 'var(--rule-dark-strong)' }}>
+                    {m.role}
+                  </span>
+                </td>
+                <td className="dim mono">{m.since}</td>
+                <td>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--mono)', fontSize: 11, color: m.status === 'ativo' ? 'var(--lime)' : 'var(--cinza)' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: m.status === 'ativo' ? 'var(--lime)' : 'var(--cinza)' }} />
+                    {m.status}
+                  </span>
+                </td>
+                <td className="right"><a className="btn-link" style={{ fontSize: 10 }} href="#">Editar →</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, {
+  AppShell, DashboardPage, CurvaForwardPage, JurosPage, ComparadorPage,
+  NDFPage, SwapsPage, BibliotecaPage, HistoricoPage, AssinaturaPage, AdminPage, ForwardCurveChart
+});
+
+
+/* DATA.VOL Router + tweaks */
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "grain": 80,
+  "displayFont": "bebas",
+  "density": "regular",
+  "tickerSpeed": "medium"
+}/*EDITMODE-END*/;
+
+const App = () => {
+  const { route, navigate } = window.useRoute();
+  const [tw, setTweak] = window.useTweaks ? window.useTweaks(TWEAK_DEFAULTS) : [TWEAK_DEFAULTS, () => {}];
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  useEffect(() => {
+    window.openLogin = () => setLoginOpen(true);
+    return () => { delete window.openLogin; };
+  }, []);
+
+  // Apply tweaks to root vars + classes
+  useEffect(() => {
+    const grain = tw.grain || 80;
+    document.documentElement.style.setProperty('--grain-opacity', (grain / 100 * 0.22).toFixed(3));
+    document.documentElement.style.setProperty('--paper-opacity', (grain / 100 * 0.07).toFixed(3));
+
+    document.body.classList.remove('density-compact', 'density-airy');
+    if (tw.density === 'compact') document.body.classList.add('density-compact');
+    if (tw.density === 'airy') document.body.classList.add('density-airy');
+
+    document.body.classList.remove('font-archivo', 'font-anton');
+    if (tw.displayFont === 'archivo') document.body.classList.add('font-archivo');
+    if (tw.displayFont === 'anton') document.body.classList.add('font-anton');
+  }, [tw]);
+
+  const openLogin = () => setLoginOpen(true);
+
+  // Public landing
+  if (route === '/' || route === '') {
+    return (
+      <>
+        <window.PublicHeader openLogin={openLogin} />
+        <window.PublicLanding openLogin={openLogin} />
+        {loginOpen && <window.LoginModal onClose={() => setLoginOpen(false)} navigate={navigate} />}
+        <TweaksWrapper tw={tw} setTweak={setTweak} />
+      </>
+    );
+  }
+
+  // App routes use AppShell
+  const appRoutes = {
+    '/dashboard':   { crumbs: ['Painel', 'Dashboard'],         comp: <window.DashboardPage /> },
+    '/curva':       { crumbs: ['Curvas', 'Dólar forward'],     comp: <window.CurvaForwardPage /> },
+    '/juros':       { crumbs: ['Curvas', 'Juros'],             comp: <window.JurosPage /> },
+    '/ndf':         { crumbs: ['Instrumentos', 'NDF'],         comp: <window.NDFPage /> },
+    '/swaps':       { crumbs: ['Instrumentos', 'Swaps'],       comp: <window.SwapsPage /> },
+    '/comparador':  { crumbs: ['Instrumentos', 'Comparador'],  comp: <window.ComparadorPage /> },
+    '/biblioteca':  { crumbs: ['Suporte', 'Biblioteca'],       comp: <window.BibliotecaPage /> },
+    '/historico':   { crumbs: ['Suporte', 'Histórico'],        comp: <window.HistoricoPage /> },
+    '/assinatura':  { crumbs: ['Conta', 'Assinatura'],         comp: <window.AssinaturaPage /> },
+    '/admin':       { crumbs: ['Conta', 'Admin'],              comp: <window.AdminPage navigate={navigate} /> },
+  };
+
+  const r = appRoutes[route];
+  if (r) {
+    return (
+      <>
+        <window.AppShell route={route} navigate={navigate} crumbs={r.crumbs} openLogin={openLogin}>
+          {r.comp}
+        </window.AppShell>
+        {loginOpen && <window.LoginModal onClose={() => setLoginOpen(false)} navigate={navigate} />}
+        <TweaksWrapper tw={tw} setTweak={setTweak} />
+      </>
+    );
+  }
+
+  // 404
+  return (
+    <>
+      <window.PublicHeader openLogin={openLogin} />
+      <div style={{ background: 'var(--black)', color: 'var(--off)', padding: '120px 0', minHeight: '60vh' }}>
+        <div className="wrap-wide" style={{ textAlign: 'center' }}>
+          <p className="label" style={{ color: 'var(--lime)', marginBottom: 16 }}>404 · Endpoint inexistente</p>
+          <h1 className="display-lg" style={{ color: 'var(--off)' }}>Rota não encontrada.</h1>
+          <p className="lead" style={{ color: 'var(--cinza)', marginTop: 24, margin: '24px auto 0' }}>
+            O caminho que você acessou não existe ou foi movido.
+          </p>
+          <a href="#/" className="btn btn-lime" style={{ marginTop: 32 }}>← Voltar para landing</a>
+        </div>
+      </div>
+      {loginOpen && <window.LoginModal onClose={() => setLoginOpen(false)} navigate={navigate} />}
+      <TweaksWrapper tw={tw} setTweak={setTweak} />
+    </>
+  );
+};
+
+const TweaksWrapper = ({ tw, setTweak }) => {
+  if (!window.TweaksPanel) return null;
+  return (
+    <window.TweaksPanel title="Tweaks · DATA.VOL">
+      <window.TweakSection label="Textura editorial">
+        <window.TweakSlider
+          label="Intensidade do grão"
+          value={tw.grain || 80}
+          min={0} max={100} step={5}
+          onChange={(v) => setTweak('grain', v)}
+          unit="%"
+        />
+      </window.TweakSection>
+
+      <window.TweakSection label="Tipografia">
+        <window.TweakSelect
+          label="Display font"
+          value={tw.displayFont || 'bebas'}
+          options={[
+            { value: 'bebas', label: 'Bebas Neue (oficial)' },
+            { value: 'archivo', label: 'Archivo Black' },
+            { value: 'anton', label: 'Anton' },
+          ]}
+          onChange={(v) => setTweak('displayFont', v)}
+        />
+      </window.TweakSection>
+
+      <window.TweakSection label="Densidade">
+        <window.TweakRadio
+          label="Espaçamento"
+          value={tw.density || 'regular'}
+          options={[
+            { value: 'compact', label: 'Compacto' },
+            { value: 'regular', label: 'Regular' },
+            { value: 'airy', label: 'Aerado' },
+          ]}
+          onChange={(v) => setTweak('density', v)}
+        />
+      </window.TweakSection>
+    </window.TweaksPanel>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+
+  </script>
+</body>
+</html>
